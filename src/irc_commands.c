@@ -167,9 +167,9 @@ int irc_msg(char *target, unsigned int msg_type, unsigned int flags, char *msg, 
     replace_alias(str1);
     
     va_start(ap, msg);
-    #ifndef _MSC_VER /* M$VC++ */
+    #ifndef _MSC_VER
     vsnprintf(str2, (MAX_MSGLEN-1), str1, ap);
-    #else
+    #else /* M$VC++ */
     _vsnprintf(str2, (MAX_MSGLEN-1), str1, ap);
     #endif
     va_end(ap);
