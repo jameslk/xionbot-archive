@@ -1,0 +1,205 @@
+# Microsoft Developer Studio Generated Dependency File, included by xionbot.mak
+
+.\conf.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\conf.h"\
+	".\event.h"\
+	".\irc_def.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
+
+.\event.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_def.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
+
+.\irc_admin.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\conf.h"\
+	".\event.h"\
+	".\irc_admin.h"\
+	".\irc_def.h"\
+	".\irc_tools.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
+
+.\irc_botcmd.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_botcmd.h"\
+	".\irc_channel.h"\
+	".\irc_commands.h"\
+	".\irc_def.h"\
+	".\irc_parse.h"\
+	".\irc_socket.h"\
+	".\irc_user.h"\
+	".\log.h"\
+	".\main.h"\
+	".\mod-irc_relay.h"\
+	".\tools.h"\
+	
+
+.\irc_channel.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_channel.h"\
+	".\irc_def.h"\
+	".\irc_mode.h"\
+	".\irc_user.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
+
+.\irc_commands.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_channel.h"\
+	".\irc_commands.h"\
+	".\irc_def.h"\
+	".\irc_socket.h"\
+	".\irc_user.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
+
+.\irc_mode.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_channel.h"\
+	".\irc_commands.h"\
+	".\irc_def.h"\
+	".\irc_mode.h"\
+	".\irc_user.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
+
+.\irc_parse.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\conf.h"\
+	".\event.h"\
+	".\irc_admin.h"\
+	".\irc_botcmd.h"\
+	".\irc_channel.h"\
+	".\irc_commands.h"\
+	".\irc_def.h"\
+	".\irc_mode.h"\
+	".\irc_parse.h"\
+	".\irc_socket.h"\
+	".\irc_tools.h"\
+	".\irc_user.h"\
+	".\log.h"\
+	".\main.h"\
+	".\mod-irc_relay.h"\
+	".\tools.h"\
+	
+
+.\irc_socket.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_commands.h"\
+	".\irc_def.h"\
+	".\irc_parse.h"\
+	".\irc_socket.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
+
+.\irc_tools.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_commands.h"\
+	".\irc_def.h"\
+	".\irc_parse.h"\
+	".\irc_tools.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
+
+.\irc_user.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_channel.h"\
+	".\irc_def.h"\
+	".\irc_user.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
+
+.\log.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_def.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
+
+.\main.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\conf.h"\
+	".\event.h"\
+	".\irc_admin.h"\
+	".\irc_botcmd.h"\
+	".\irc_channel.h"\
+	".\irc_commands.h"\
+	".\irc_def.h"\
+	".\irc_mode.h"\
+	".\irc_parse.h"\
+	".\irc_socket.h"\
+	".\irc_user.h"\
+	".\log.h"\
+	".\main.h"\
+	".\mod-irc_relay.h"\
+	".\subconf.h"\
+	".\tools.h"\
+	
+
+".\mod-irc_relay.c" : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_botcmd.h"\
+	".\irc_channel.h"\
+	".\irc_commands.h"\
+	".\irc_def.h"\
+	".\irc_tools.h"\
+	".\irc_user.h"\
+	".\log.h"\
+	".\main.h"\
+	".\mod-irc_relay.h"\
+	".\tools.h"\
+	
+
+.\subconf.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\conf.h"\
+	".\event.h"\
+	".\irc_def.h"\
+	".\log.h"\
+	".\main.h"\
+	".\subconf.h"\
+	".\tools.h"\
+	
+
+.\tools.c : \
+	"..\..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\event.h"\
+	".\irc_def.h"\
+	".\log.h"\
+	".\main.h"\
+	".\tools.h"\
+	
