@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
     
     signal(SIGINT, extern_exit);
     
-    for(;;) {
+    while(1) {
         fgets(console, 512, stdin);
         if(console[0] == '\n') break;
         strrtok(console, "\r\n");
@@ -177,7 +177,7 @@ void free_xion_memory(void) {
         freem(bot.admin_array_current);
     }
     
-    for(;q_first != NULL;) {
+    while(q_first != NULL) {
         for(qtmp = q_first;qtmp->next != NULL;qtmp = qtmp->next);
         qtmp2 = qtmp->prev;
         freem(qtmp);

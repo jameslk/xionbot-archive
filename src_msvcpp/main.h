@@ -10,7 +10,7 @@ http://www.gnu.org/licenses/gpl.txt
 
 /* Xion Main Macros */
 #define XION_VERSION "2.3b"
-#define XION_VERSION_MSG "XionBot v2.3b by SeLfkiLL (www.jaleko.tk)"
+#define XION_VERSION_MSG "XionBot v2.3b [xionbot.sourceforge.net]"
 
 #define XION_ERROR_MSG "XionBot ERROR:"
 #define XION_WARN_MSG "XionBot WARNING:"
