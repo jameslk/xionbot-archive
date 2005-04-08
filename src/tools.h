@@ -26,12 +26,12 @@ void* callocm(size_t size, size_t typelen);
 void* mallocm(size_t size);
 void _freem(void** memblock);
 #define freem(MEM) _freem((void*)&MEM)
-
-/* The use of free_2d_array is discouraged. */
 void _free_2d_array(void ***array, unsigned long elements);
 #define free_2d_array(ARRAY, ELEMENTS) _free_2d_array((void*)&ARRAY, ELEMENTS)
 
+/* The use of multi_free is discouraged. */
 void multi_free(void *fist, ...);
+
 char* strrtok(char *str, const char *tok);
 char* xstrtok(char *str, const char *tok, int *pos, int start);
 char* xstrcpy(char *dest, const char *src, size_t num);
