@@ -521,6 +521,21 @@ unsigned int bind_argument_array(char **buf, char **argv, unsigned int argc, uns
     return 1;
 }
 
+#if defined(PLATFORM_POSIX)
+unsigned int mkthread(void*(*func)(void*), void *param) {
+    thread_t thread;
+    int retval;
+    
+    retval = pthread_create(&thread, NULL, func, (void*) param);
+    
+    if(retval != 0) {
+        make_error("Failed to create new thread.");
+        return 0;
+    }
+    
+    return 1;
+}
+#elif defined(PLATFORM_WINDOWS)
 unsigned int mkthread(LPTHREAD_START_ROUTINE func, LPVOID param) {
     DWORD thdId;
     HANDLE thdHandle;
@@ -537,3 +552,4 @@ unsigned int mkthread(LPTHREAD_START_ROUTINE func, LPVOID param) {
     
     return 1;
 }
+#endif

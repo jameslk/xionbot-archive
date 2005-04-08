@@ -7,10 +7,11 @@ http://www.gnu.org/licenses/gpl.txt
 */
 
 #if defined(PLATFORM_POSIX)
-#include <unistd.h>
+    #include <unistd.h>
+    #include <pthread.h>
 #elif defined(PLATFORM_WINDOWS)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
 #endif
 
 void _make_error(char *errmsg, char *file, const int line);
@@ -42,8 +43,13 @@ char* conf_replace_alias(char *str);
 unsigned int make_argument_array(char ***buf, const char *str);
 unsigned int bind_argument_array(char **buf, char **argv, unsigned int argc, unsigned int offset);
 
-#define THREADFUNC(a) DWORD WINAPI a(LPVOID lpParam)
-unsigned int mkthread(LPTHREAD_START_ROUTINE func, LPVOID param);
+#if defined(PLATFORM_POSIX)
+    #define THREADFUNC(a) void* a(void *param)
+    unsigned int mkthread(void*(*func)(void*), void *param);
+#elif defined(PLATFORM_WINDOWS)
+    #define THREADFUNC(a) DWORD WINAPI a(LPVOID lpParam)
+    unsigned int mkthread(LPTHREAD_START_ROUTINE func, LPVOID param);
+#endif
 
 /* A list (void array) of any type of data */
 typedef void** datalist;
