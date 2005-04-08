@@ -49,6 +49,7 @@ int irc_pass(char *pass) {
 int irc_pong(char *ping) {
     char *data;
     char *splitFrmSp, *sepFrmCol;
+    int pos;
     
     clearstr(raw, MAX_LEN);
     
@@ -59,15 +60,15 @@ int irc_pong(char *ping) {
         return 0;
         
     xstrcpy(data, ping, 513);
-    strtok(data, " ");
-    splitFrmSp = strtok(NULL, " ");
+    xstrtok(data, " ", &pos, 1);
+    splitFrmSp = xstrtok(data, " ", &pos, 0);
     if(!splitFrmSp) {
         freem(data);
         return -2;
     }
     
     xstrcpy(data, splitFrmSp, 513);
-    sepFrmCol = strtok(data, ":");
+    sepFrmCol = xstrtok(data, ":", &pos, 1);
     if(!sepFrmCol) {
         freem(data);
         return -2;
