@@ -527,7 +527,7 @@ unsigned int mkthread(void*(*func)(void*), void *param) {
     pthread_t thread;
     int retval;
     
-    retval = pthread_create(&thread, NULL, func, (void*) param);
+    retval = pthread_create(&thread, NULL, func, (void*)param);
     
     if(retval != 0) {
         make_error("Failed to create new thread.");
