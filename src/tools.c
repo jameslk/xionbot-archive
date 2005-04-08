@@ -9,6 +9,7 @@ http://www.gnu.org/licenses/gpl.txt
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <time.h>
 
 #include "main.h"
@@ -523,7 +524,7 @@ unsigned int bind_argument_array(char **buf, char **argv, unsigned int argc, uns
 
 #if defined(PLATFORM_POSIX)
 unsigned int mkthread(void*(*func)(void*), void *param) {
-    thread_t thread;
+    pthread_t thread;
     int retval;
     
     retval = pthread_create(&thread, NULL, func, (void*) param);
