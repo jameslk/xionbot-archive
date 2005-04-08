@@ -155,10 +155,97 @@ int irc_part(char *chan, char *reason) {
     return irc_raw(raw);
 }
 
-int irc_msg(char *target, unsigned int msg_type, unsigned int flags, char *msg, ...) {
+int irc_privmsg_user(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_PRIVMSG, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_privmsg_chan(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_PRIVMSG, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_action_user(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_ACTION, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_action_chan(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_ACTION, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_notice_user(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_NOTICE, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_notice_chan(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_NOTICE, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_ctcp_user(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_CTCP, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_ctcp_chan(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_CTCP, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_msg(char *target, unsigned int msg_type, unsigned int flags, char *msg, va_list ap) {
     char str1[MAX_LEN];
     char str2[MAX_MSGLEN];
-    va_list ap;
     
     if(target == NULL) return -1;
     if(blankstr(msg)) return -1;
@@ -166,13 +253,11 @@ int irc_msg(char *target, unsigned int msg_type, unsigned int flags, char *msg, 
     xstrcpy(str1, msg, MAX_MSGLEN);
     replace_alias(str1);
     
-    va_start(ap, msg);
     #ifndef _MSC_VER
     vsnprintf(str2, (MAX_MSGLEN-1), str1, ap);
     #else /* M$VC++ */
     _vsnprintf(str2, (MAX_MSGLEN-1), str1, ap);
     #endif
-    va_end(ap);
     
     clearstr(str1, MAX_LEN);
     

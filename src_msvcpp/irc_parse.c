@@ -538,6 +538,7 @@ PARSE_FUNC(kick) {
     unsigned int key_set;
     struct chanNode *chan;
     struct userNode *user;
+    int pos;
     
     if(blankstr(raw))
         return 0;
@@ -548,10 +549,10 @@ PARSE_FUNC(kick) {
     
     strcpy(temp, raw);
     
-    strtok(temp, " ");
-    strtok(NULL, " ");
-    strtok(NULL, " ");
-    user = user_get_handle(strtok(NULL, " "));
+    xstrtok(temp, " ", &pos, 1);
+    xstrtok(temp, " ", &pos, 0);
+    xstrtok(temp, " ", &pos, 0);
+    user = user_get_handle(xstrtok(temp, " ", &pos, 0));
     
     clearstr(temp, strlen(raw)+1);
     irc_get_target(temp, raw);
@@ -796,6 +797,7 @@ PARSE_FUNC(302) {
     char *temp, *nick, *hostmask;
     struct userNode *user;
     unsigned int len, i, oper = 0;
+    int pos;
     
     if(blankstr(raw))
         return 0;
@@ -810,7 +812,7 @@ PARSE_FUNC(302) {
         return 1;
     }
     
-    nick = strtok(temp, "=");
+    nick = xstrtok(temp, "=", &pos, 1);
     len = strlen(nick)-1;
     if(nick[len] == '*') {
         nick[len] = 0;
@@ -829,7 +831,7 @@ PARSE_FUNC(302) {
         user->relate = 0;
     }
     
-    hostmask = strtok(NULL, "=");
+    hostmask = xstrtok(temp, "=", &pos, 0);
     if((*hostmask == '+') || (*hostmask == '-'))
         hostmask++;
     
@@ -859,6 +861,7 @@ PARSE_FUNC(302) {
 /* RPL_TOPIC */
 PARSE_FUNC(332) {
     char *temp, *temp2, *temp3;
+    int pos;
     
     if(blankstr(raw))
         return 0;
@@ -869,15 +872,15 @@ PARSE_FUNC(332) {
     
     strcpy(temp, raw);
     
-    strtok(temp, " ");
-    strtok(NULL, " ");
-    temp3 = strtok(NULL, " ");
+    xstrtok(temp, " ", &pos, 1);
+    xstrtok(temp, " ", &pos, 0);
+    temp3 = xstrtok(temp, " ", &pos, 0);
     if(!istrcmp(temp3, bot.current_nick)) {
         freem(temp);
         return 1;
     }
     
-    temp3 = strtok(NULL, " ");
+    temp3 = xstrtok(temp, " ", &pos, 0);
     if(chan_get_handle(temp3) == NULL) {
         freem(temp);
         return 1;
@@ -897,6 +900,7 @@ PARSE_FUNC(332) {
 PARSE_FUNC(324) {
     char *temp, *tptr;
     struct chanNode *chan;
+    int pos;
     
     if(blankstr(raw))
         return 0;
@@ -906,10 +910,10 @@ PARSE_FUNC(324) {
         return 0;
     
     xstrcpy(temp, raw, strlen(raw));
-    strtok(temp, " ");
-    strtok(NULL, " ");
-    strtok(NULL, " ");
-    tptr = strtok(NULL, " ");
+    xstrtok(temp, " ", &pos, 1);
+    xstrtok(temp, " ", &pos, 0);
+    xstrtok(temp, " ", &pos, 0);
+    tptr = xstrtok(temp, " ", &pos, 0);
     
     if(chan_prefix(*tptr)) {
         chan = chan_get_handle(tptr);
@@ -934,6 +938,7 @@ PARSE_FUNC(353) {
     struct userNode *user;
     struct chanlist *hChanList;
     struct userlist *hUserList;
+    int pos;
     
     if(blankstr(raw))
         return 0;
@@ -944,7 +949,7 @@ PARSE_FUNC(353) {
     }
     
     xstrcpy(temp, (strstr(raw, bot.current_nick)+strlen(bot.current_nick)+3), strlen(raw)+1);
-    chan = chan_get_handle(strtok(temp, " "));
+    chan = chan_get_handle(xstrtok(temp, " ", NULL, 1));
     if(!chan) {
         freem(temp);
         return 0;
@@ -953,7 +958,7 @@ PARSE_FUNC(353) {
     clearstr(temp, strlen(raw)+1);
     strcpy(temp, strstr(raw, " :")+2);
     
-    for(temp2 = strtok(temp, " ");temp2 != NULL;temp2 = strtok(NULL, " ")) {
+    for(temp2 = xstrtok(temp, " ", &pos, 1);temp2 != NULL;temp2 = xstrtok(temp, " ", &pos, 0)) {
         isnick = irc_char_type(*temp2, IS_TYPE_ALPHA);
         isnick = isnick || irc_char_type(*temp2, IS_TYPE_NUMERIC);
         isnick = isnick || irc_char_type(*temp2, IS_TYPE_SPECIAL);
@@ -1009,6 +1014,7 @@ PARSE_FUNC(367) {
     char *temp, *temp2;
     struct chanNode *chan;
     struct banlist *ban;
+    int pos;
     
     if(blankstr(raw))
         return 0;
@@ -1019,21 +1025,21 @@ PARSE_FUNC(367) {
     
     strcpy(temp, raw);
     
-    strtok(temp, " ");
-    strtok(NULL, " ");
-    strtok(NULL, " ");
-    chan = chan_get_handle(strtok(NULL, " "));
+    xstrtok(temp, " ", &pos, 1);
+    xstrtok(temp, " ", &pos, 0);
+    xstrtok(temp, " ", &pos, 0);
+    chan = chan_get_handle(xstrtok(temp, " ", &pos, 0));
     if(chan == NULL)
         return 0;
     
-    temp2 = strtok(NULL, " ");
+    temp2 = xstrtok(temp, " ", &pos, 0);
     mode_delban(chan, temp2);
     ban = mode_addban(chan, temp2);
     if(ban == NULL)
         return 0;
     
-    xstrcpy(ban->setby, strtok(NULL, " "), MAX_LEN);
-    ban->date = atoi(strtok(NULL, " "));
+    xstrcpy(ban->setby, xstrtok(temp, " ", &pos, 0), MAX_LEN);
+    ban->date = atoi(xstrtok(temp, " ", &pos, 0));
     
     event_call(EVENT_IRCRPL_BANLIST, 3, raw, chan->name, ban);
     
