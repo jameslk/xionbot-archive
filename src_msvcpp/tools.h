@@ -7,10 +7,11 @@ http://www.gnu.org/licenses/gpl.txt
 */
 
 #if defined(PLATFORM_POSIX)
-#include <unistd.h>
+    #include <unistd.h>
+    #include <pthread.h>
 #elif defined(PLATFORM_WINDOWS)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
 #endif
 
 void _make_error(char *errmsg, char *file, const int line);
@@ -25,12 +26,12 @@ void* callocm(size_t size, size_t typelen);
 void* mallocm(size_t size);
 void _freem(void** memblock);
 #define freem(MEM) _freem((void*)&MEM)
-
-/* The use of free_2d_array is discouraged. */
 void _free_2d_array(void ***array, unsigned long elements);
 #define free_2d_array(ARRAY, ELEMENTS) _free_2d_array((void*)&ARRAY, ELEMENTS)
 
+/* The use of multi_free is discouraged. */
 void multi_free(void *fist, ...);
+
 char* strrtok(char *str, const char *tok);
 char* xstrtok(char *str, const char *tok, int *pos, int start);
 char* xstrcpy(char *dest, const char *src, size_t num);
@@ -42,8 +43,13 @@ char* conf_replace_alias(char *str);
 unsigned int make_argument_array(char ***buf, const char *str);
 unsigned int bind_argument_array(char **buf, char **argv, unsigned int argc, unsigned int offset);
 
-#define THREADFUNC(a) DWORD WINAPI a(LPVOID lpParam)
-unsigned int mkthread(LPTHREAD_START_ROUTINE func, LPVOID param);
+#if defined(PLATFORM_POSIX)
+    #define THREADFUNC(a) void* a(void *param)
+    unsigned int mkthread(void*(*func)(void*), void *param);
+#elif defined(PLATFORM_WINDOWS)
+    #define THREADFUNC(a) DWORD WINAPI a(LPVOID lpParam)
+    unsigned int mkthread(LPTHREAD_START_ROUTINE func, LPVOID param);
+#endif
 
 /* A list (void array) of any type of data */
 typedef void** datalist;
