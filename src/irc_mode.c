@@ -47,7 +47,7 @@ unsigned int mode_ischparamode(char mode) {
 struct modeparam* mode_getparam(struct modeparam *mp, char *modestr, unsigned int tok) {
     char *mode, *param;
     unsigned int i = 0, t = 0, s = 0, len;
-    int pos;
+    int pos = 0;
     
     if((mp == NULL) || (blankstr(modestr)))
         return NULL;
@@ -66,7 +66,7 @@ struct modeparam* mode_getparam(struct modeparam *mp, char *modestr, unsigned in
         
     strcpy(mode, modestr);
     
-    xstrtok(mode, " ", &pos, 1);
+    xstrtok(mode, " ", &pos);
     for(i = 0;i < len;i++) {
         if(modestr[i] == ' ') {
             break;
@@ -78,7 +78,7 @@ struct modeparam* mode_getparam(struct modeparam *mp, char *modestr, unsigned in
             s = 0;
         }
         else if(mode_ischparamode(modestr[i])) {
-            param = xstrtok(mode, " ", &pos, 0);
+            param = xstrtok(mode, " ", &pos);
             if(++t == tok) {
                 mp->set = s;
                 mp->mode = modestr[i];
