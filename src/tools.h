@@ -33,15 +33,15 @@ void _free_2d_array(void ***array, unsigned long elements);
 void multi_free(void *fist, ...);
 
 char* strrtok(char *str, const char *tok);
-char* xstrtok(char *str, const char *tok, int *pos, int start);
+char* xstrtok(char *str, const char *tok, int *pos);
 char* xstrcpy(char *dest, const char *src, size_t num);
 unsigned int blankstr(const char *str);
 unsigned int clearstr(char *str, unsigned long max);
 unsigned int matchstr(unsigned char *wildstr, unsigned char *regstr);
 char* replace_alias(char *str);
 char* conf_replace_alias(char *str);
-unsigned int make_argument_array(char ***buf, const char *str);
-unsigned int bind_argument_array(char **buf, char **argv, unsigned int argc, unsigned int offset);
+unsigned int make_argument_array(char ***bufp, const char *str);
+unsigned int bind_argument_array(char **bufp, char **argv, unsigned int argc, unsigned int offset);
 
 #if defined(PLATFORM_POSIX)
     #define THREADFUNC(a) void* a(void *param)
