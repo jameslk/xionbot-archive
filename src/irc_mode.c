@@ -397,7 +397,7 @@ unsigned int mode_chanparam(struct chanNode *chan, char *setter, char *modestr) 
             
             if(mode_getparam(&mp, modestr, ++tok) == NULL) {
                 freem(temp);
-                return 0;
+                return 1;
             }
             
             if(mp.mode != 'b') {
