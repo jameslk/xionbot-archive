@@ -22,3 +22,5 @@ THREADFUNC(irc_fightfornick);
 #define IS_TYPE_ACCESS 2
 #define IS_TYPE_SPECIAL 3
 unsigned int irc_char_type(char c, unsigned int type);
+
+unsigned int irc_strip_ctrlcodes(char **bufp, const char *text);
