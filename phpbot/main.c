@@ -311,6 +311,9 @@ unsigned int init(void) {
         }
     }
     
+    /* URL Module: mod-weburlcache.c */
+    urlmod_init();
+    
     freem(conftok);
     free_2d_array(xlines, xcount);
     free_2d_array(clines, ccount);

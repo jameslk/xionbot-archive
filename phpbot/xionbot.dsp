@@ -243,6 +243,14 @@ SOURCE=".\mod-irc_relay.h"
 # End Source File
 # Begin Source File
 
+SOURCE=".\mod-weburlcache.c"
+# End Source File
+# Begin Source File
+
+SOURCE=".\mod-weburlcache.h"
+# End Source File
+# Begin Source File
+
 SOURCE=.\tools.c
 # End Source File
 # Begin Source File
