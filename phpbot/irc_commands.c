@@ -49,6 +49,7 @@ int irc_pass(char *pass) {
 int irc_pong(char *ping) {
     char *data;
     char *splitFrmSp, *sepFrmCol;
+	int pos = 0;
     
     clearstr(raw, MAX_LEN);
     
@@ -59,15 +60,15 @@ int irc_pong(char *ping) {
         return 0;
         
     xstrcpy(data, ping, 513);
-    strtok(data, " ");
-    splitFrmSp = strtok(NULL, " ");
+    xstrtok(data, " ", &pos);
+    splitFrmSp = xstrtok(data, " ", &pos);
     if(!splitFrmSp) {
         freem(data);
         return -2;
     }
     
     xstrcpy(data, splitFrmSp, 513);
-    sepFrmCol = strtok(data, ":");
+    sepFrmCol = xstrtok(data, ":", NULL);
     if(!sepFrmCol) {
         freem(data);
         return -2;
@@ -155,10 +156,97 @@ int irc_part(char *chan, char *reason) {
     return irc_raw(raw);
 }
 
-int irc_msg(char *target, unsigned int msg_type, unsigned int flags, char *msg, ...) {
+int irc_privmsg_user(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_PRIVMSG, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_privmsg_chan(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_PRIVMSG, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_action_user(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_ACTION, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_action_chan(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_ACTION, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_notice_user(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_NOTICE, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_notice_chan(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_NOTICE, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_ctcp_user(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_CTCP, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_ctcp_chan(char *target, unsigned int flags, char *msg, ...) {
+	va_list ap;
+	int ret;
+    
+    va_start(ap, msg);
+    ret = irc_msg(target, MSG_CTCP, flags, msg, ap);
+    va_end(ap);
+
+	return ret;
+}
+
+int irc_msg(char *target, unsigned int msg_type, unsigned int flags, char *msg, va_list ap) {
     char str1[MAX_LEN];
     char str2[MAX_MSGLEN];
-    va_list ap;
     
     if(target == NULL) return -1;
     if(blankstr(msg)) return -1;
@@ -166,13 +254,11 @@ int irc_msg(char *target, unsigned int msg_type, unsigned int flags, char *msg, 
     xstrcpy(str1, msg, MAX_MSGLEN);
     replace_alias(str1);
     
-    va_start(ap, msg);
     #ifndef _MSC_VER
     vsnprintf(str2, (MAX_MSGLEN-1), str1, ap);
     #else /* M$VC++ */
     _vsnprintf(str2, (MAX_MSGLEN-1), str1, ap);
     #endif
-    va_end(ap);
     
     clearstr(str1, MAX_LEN);
     
@@ -209,45 +295,6 @@ int irc_msg(char *target, unsigned int msg_type, unsigned int flags, char *msg, 
     else
         return irc_raw(str1);
 }
-
-/*int irc_ctcp(char *msg, char *target, unsigned int urgent, unsigned int type) {
-    static char temp[(IRC_MAX_PRIVMSGLEN+1)];
-    char *first;
-    
-    memset(raw, '\0', 512);
-    
-    if((blankstr(msg)) || (blankstr(target))) return -1;
-    if((strlen(msg) > IRC_MAX_PRIVMSGLEN) || (strlen(target) > IRC_MAX_TARGETLEN)) return -1;
-    
-    xstrcpy(temp, msg, (IRC_MAX_PRIVMSGLEN+1));
-    first = strtok(temp, " ");
-    xstrcpy(temp, first, (IRC_MAX_PRIVMSGLEN+1));
-    
-    if(strchr(msg, ' ') == NULL) {
-        first = (char*)callocm((IRC_MAX_PRIVMSGLEN+1), sizeof(char));
-        sprintf(raw, "%s %s :%c%s%c", (type ? "NOTICE" : "PRIVMSG"),
-                                    target,
-                                    IRC_EVENT_CHAR,
-                                    mkupper(first, temp),
-                                    IRC_EVENT_CHAR);
-        freem(first);
-    }
-    else {
-        first = (char*)callocm((IRC_MAX_PRIVMSGLEN+1), sizeof(char));
-        sprintf(raw, "%s %s :%c%s %s%c", (type ? "NOTICE" : "PRIVMSG"),
-                                                target,
-                                                IRC_EVENT_CHAR,
-                                                mkupper(first, temp),
-                                                (strchr(msg, ' ')+1),
-                                                IRC_EVENT_CHAR);
-        freem(first);
-    }
-    
-    if(urgent)
-        return irc_send(raw, 1);
-    else
-        return irc_raw(raw);
-}*/
 
 int irc_ison(char *nicks) {
     clearstr(raw, MAX_LEN);

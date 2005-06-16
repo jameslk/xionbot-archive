@@ -17,7 +17,7 @@ char* config_line(char *buf, unsigned long line) {
     char *fbuf, *l;
     FILE *fptr;
     unsigned long fsize, i;
-    int pos;
+    int pos = 0;
     
     #if defined(PLATFORM_WINDOWS)
     fptr = fopen(bot.config, "r+t");
@@ -40,7 +40,7 @@ char* config_line(char *buf, unsigned long line) {
     
     if(line == 0) line++;
     
-    if((l = xstrtok(fbuf, "\n", &pos, 1)) == NULL) {
+    if((l = xstrtok(fbuf, "\n", &pos)) == NULL) {
         freem(fbuf);
         return NULL;
     }
@@ -50,7 +50,7 @@ char* config_line(char *buf, unsigned long line) {
             freem(fbuf);
             return buf;
         }
-        l = xstrtok(fbuf, "\n", &pos, 0);
+        l = xstrtok(fbuf, "\n", &pos);
     }
     
     freem(fbuf);
@@ -98,7 +98,7 @@ char* get_itemtok(char *buf, char* item, unsigned int tok) {
     char *temp = (char*)callocm(CONF_MAX_ITEMLEN, sizeof(char));
     char *temp2 = (char*)callocm(CONF_MAX_ITEMLEN, sizeof(char));
     unsigned int i = 0, x = 0;
-    int pos;
+    int pos = 0;
     
     xstrcpy(temp, item, (CONF_MAX_ITEMLEN-1));
     strcat(temp, ":");
@@ -119,7 +119,7 @@ char* get_itemtok(char *buf, char* item, unsigned int tok) {
     
     if(tok == 0) tok++;
     
-    retval = xstrtok(temp, ":", &pos, 1);
+    retval = xstrtok(temp, ":", &pos);
     for(i = 1;retval != NULL;i++) {
         if(i == tok) {
             xstrcpy(buf, retval, CONF_MAX_ITEMLEN);
@@ -127,7 +127,7 @@ char* get_itemtok(char *buf, char* item, unsigned int tok) {
             freem(temp2);
             return buf;
         }
-        retval = xstrtok(temp, ":", &pos, 0);
+        retval = xstrtok(temp, ":", &pos);
     }
     
     freem(temp);
