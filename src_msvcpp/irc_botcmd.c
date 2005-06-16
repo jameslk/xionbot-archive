@@ -396,6 +396,8 @@ static BOT_CMD(info) {
     irc_notice_user(user->nick, 0, "- Port: %d", bot.servport);
     irc_notice_user(user->nick, 0, "- Config: %s", bot.config);
     irc_notice_user(user->nick, 0, "- Max Reconnects: %d", bot.maxretry);
+    irc_notice_user(user->nick, 0, "- Ping Timeout: %d seconds", bot.ping_timeout);
+    irc_notice_user(user->nick, 0, "- Fresh Log: %s", bot.fresh_log ? "yes" : "no");
     irc_notice_user(user->nick, 0, "- Floodchecking: %s", bot.floodcheck ? "on" : "off");
     irc_notice_user(user->nick, 0, "- Chan Trigger: %c", bot.ctrigger);
     if(bot.ptrigger == ';')
