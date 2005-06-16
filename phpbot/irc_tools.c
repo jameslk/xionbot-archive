@@ -9,11 +9,14 @@ http://www.gnu.org/licenses/gpl.txt
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <winsock2.h>
 
 #include "main.h"
 #include "irc_tools.h"
 #include "irc_parse.h"
 #include "irc_commands.h"
+#include "irc_socket.h"
 
 char* irc_get_host(char *buf, char *raw) {
     char *data;
@@ -267,6 +270,40 @@ THREADFUNC(irc_fightfornick) {
     
     mynickison = 0;
         
+    return 0;
+}
+
+THREADFUNC(irc_pingserver) {
+    char time_str[MAX_MSGLEN];
+    int i;
+    
+    while(1) {
+        if(recieved_ping) {
+            recieved_ping = 0;
+            waits(bot.ping_timeout);
+        }
+        else if(bot.connected) {
+            sprintf(time_str, "%ld", time(NULL));
+            irc_ping(time_str);
+            waits(bot.ping_timeout);
+            if(!recieved_ping) {
+                irc_disconnect();
+                waits(3);
+                if((i = irc_connect(bot.servaddr, bot.servport)) != 0) {
+                        printf("Failed to connect. ERROR %d:%d\n\n", WSAGetLastError(), i);
+                        log_write("Connecting failed with code: %d:%d", WSAGetLastError(), i);
+                        printf("Press Enter key to continue.");
+                        getchar();
+                        exit(1);
+                }
+                break;
+            }
+        }
+        else {
+            break;
+        }
+    }
+    
     return 0;
 }
 

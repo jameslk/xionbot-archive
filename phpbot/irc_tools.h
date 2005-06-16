@@ -16,6 +16,7 @@ char* irc_get_cmdtype2(char *buf, char *raw);
 char* irc_get_netname(char *buf, char *raw);
 char* irc_get_servname(char *buf, char *raw);
 THREADFUNC(irc_fightfornick);
+THREADFUNC(irc_pingserver);
 
 #define IS_TYPE_ALPHA 0
 #define IS_TYPE_NUMERIC 1
