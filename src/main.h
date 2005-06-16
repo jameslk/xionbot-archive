@@ -29,9 +29,6 @@ http://www.gnu.org/licenses/gpl.txt
 /* Compiling under Windows */
 #define PLATFORM_WINDOWS
 
-/* Clear the log file on start */
-#define XION_FRESH_LOG 1
-
 /*The "rediculously long" IRC/XionBot information structure.*/
 struct xionbot {
     char nick[MAX_NICKLEN];
@@ -47,9 +44,12 @@ struct xionbot {
     char servpass[MAX_PASSLEN];
     /* // */
     char config[261];
+    char fresh_log; /* Clear the log file on start? */
     /* // */
     unsigned int maxretry;
     unsigned int current_try;
+    char connected; /* Treated as a boolean variable */
+    unsigned int ping_timeout; /* Also used as the ping frequency */
     /* // */
     unsigned int floodcheck;
     /* // */

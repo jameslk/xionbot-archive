@@ -26,6 +26,7 @@ http://www.gnu.org/licenses/gpl.txt
 #include "irc_botcmd.h"
 
 #include "mod-irc_relay.h"
+#include "mod-weburlcache.h"
 
 #include "php_global.h"
 #include "php_main.h"
@@ -53,9 +54,6 @@ int main(int argc, char *argv[]) {
     handle_first->handle = (void*)&handle_first;
     handle_last = handle_first;
     
-    log_clean();
-    log_write("*** Program started. Executed as: %s", argv[0]);
-    
     dispsplash();
     
     printf("Initializing... ");
@@ -75,6 +73,10 @@ int main(int argc, char *argv[]) {
     }
     printf("Done.\n");
     
+    if(!log_clean())
+        make_warning("Failed to clear log file.");
+    log_write("*** Program started. Executed as: %s", argv[0]);
+    
     printf("Connecting to %s:%d... ", bot.servaddr, bot.servport);
     if((err = irc_connect(bot.servaddr, bot.servport)) != 0) {
         printf("Failed to connect. ERROR %d:%d\n\n", WSAGetLastError(), err);
@@ -84,15 +86,6 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     printf("Connected.\n");
-    
-    printf("Initializing socket event loop... ");
-    bot.current_try = 0;
-    if(mkthread(irc_sockeventloop, NULL) == 0) {
-        printf("\n\nPress Enter key to continue.");
-        getchar();
-        return 0;
-    }
-    printf("Done.\n");
     
     signal(SIGINT, extern_exit);
     
@@ -111,6 +104,7 @@ int main(int argc, char *argv[]) {
         else irc_send(console, 1);
     }
     
+    irc_quit(NULL);
     irc_disconnect();
     
     PHPE_END
@@ -131,6 +125,7 @@ void extern_exit(int info) {
     if(info == SIGINT)
         log_write("*** Recieved CTRL-C...");
     
+    irc_quit("Program Terminated");
     irc_disconnect();
     free_xion_memory();
     event_call(EVENT_EXIT, 0);
@@ -279,6 +274,12 @@ unsigned int init(void) {
     /*S:Lines*/
     /*maxretry*/    irc_subconftok(conftok, 'S', "maxretry", 3);
                     bot.maxretry = atoi(conftok);
+    
+    /*pingtimeout*/ irc_subconftok(conftok, 'S', "pingtimeout", 3);
+                    bot.ping_timeout = atoi(conftok);
+    
+    /*freshlog*/    irc_subconftok(conftok, 'S', "freshlog", 3);
+                    bot.fresh_log = (atoi(conftok) ? 1 : 0);
                     
     /*antiflood*/   irc_subconftok(conftok, 'S', "antiflood", 5);
                     bot.floodcheck = (atoi(conftok) ? 1 : 0);
@@ -345,6 +346,9 @@ unsigned int rehashconfig(void) {
     /*S:Lines*/
     /*maxretry*/    irc_subconftok(conftok, 'S', "maxretry", 3);
                     bot.maxretry = atoi(conftok);
+    
+    /*pingtimeout*/ irc_subconftok(conftok, 'S', "pingtimeout", 3);
+                    bot.ping_timeout = atoi(conftok);
     
     /*antiflood*/   irc_subconftok(conftok, 'S', "antiflood", 5);
                     bot.floodcheck = (atoi(conftok) ? 1 : 0);
