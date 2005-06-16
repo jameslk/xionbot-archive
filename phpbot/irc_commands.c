@@ -46,10 +46,20 @@ int irc_pass(char *pass) {
     return irc_send(raw, 1);
 }
 
+int irc_ping(char *ping) {
+    clearstr(raw, MAX_LEN);
+    
+    if(blankstr(ping)) return -1;
+    if(strlen(ping) > MAX_MSGLEN) return -1;
+    
+    sprintf(raw, "PING :%s", ping);
+    return irc_send(raw, 1);
+}
+
 int irc_pong(char *ping) {
     char *data;
     char *splitFrmSp, *sepFrmCol;
-	int pos = 0;
+    int pos = 0;
     
     clearstr(raw, MAX_LEN);
     
@@ -62,16 +72,16 @@ int irc_pong(char *ping) {
     xstrcpy(data, ping, 513);
     xstrtok(data, " ", &pos);
     splitFrmSp = xstrtok(data, " ", &pos);
-    if(!splitFrmSp) {
+    if(blankstr(splitFrmSp)) {
         freem(data);
-        return -2;
+        return 0;
     }
     
     xstrcpy(data, splitFrmSp, 513);
     sepFrmCol = xstrtok(data, ":", NULL);
-    if(!sepFrmCol) {
+    if(blankstr(sepFrmCol)) {
         freem(data);
-        return -2;
+        return 0;
     }
     
     sprintf(raw, "PONG :%s", sepFrmCol);
@@ -296,6 +306,45 @@ int irc_msg(char *target, unsigned int msg_type, unsigned int flags, char *msg, 
         return irc_raw(str1);
 }
 
+/*int irc_ctcp(char *msg, char *target, unsigned int urgent, unsigned int type) {
+    static char temp[(IRC_MAX_PRIVMSGLEN+1)];
+    char *first;
+    
+    memset(raw, '\0', 512);
+    
+    if((blankstr(msg)) || (blankstr(target))) return -1;
+    if((strlen(msg) > IRC_MAX_PRIVMSGLEN) || (strlen(target) > IRC_MAX_TARGETLEN)) return -1;
+    
+    xstrcpy(temp, msg, (IRC_MAX_PRIVMSGLEN+1));
+    first = strtok(temp, " ");
+    xstrcpy(temp, first, (IRC_MAX_PRIVMSGLEN+1));
+    
+    if(strchr(msg, ' ') == NULL) {
+        first = (char*)callocm((IRC_MAX_PRIVMSGLEN+1), sizeof(char));
+        sprintf(raw, "%s %s :%c%s%c", (type ? "NOTICE" : "PRIVMSG"),
+                                    target,
+                                    IRC_EVENT_CHAR,
+                                    mkupper(first, temp),
+                                    IRC_EVENT_CHAR);
+        freem(first);
+    }
+    else {
+        first = (char*)callocm((IRC_MAX_PRIVMSGLEN+1), sizeof(char));
+        sprintf(raw, "%s %s :%c%s %s%c", (type ? "NOTICE" : "PRIVMSG"),
+                                                target,
+                                                IRC_EVENT_CHAR,
+                                                mkupper(first, temp),
+                                                (strchr(msg, ' ')+1),
+                                                IRC_EVENT_CHAR);
+        freem(first);
+    }
+    
+    if(urgent)
+        return irc_send(raw, 1);
+    else
+        return irc_raw(raw);
+}*/
+
 int irc_ison(char *nicks) {
     clearstr(raw, MAX_LEN);
     
@@ -330,7 +379,7 @@ int irc_quit(char *quitmsg) {
     r1 = irc_send(raw, 1);
     
     memset(raw, '\0', 512);
-    if(blankstr(quitmsg)) {
+    if(!blankstr(quitmsg)) {
         if(strlen(quitmsg) > 464) return -1;
         sprintf(raw, "QUIT :%s", quitmsg);
     }

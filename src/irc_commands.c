@@ -46,6 +46,16 @@ int irc_pass(char *pass) {
     return irc_send(raw, 1);
 }
 
+int irc_ping(char *ping) {
+    clearstr(raw, MAX_LEN);
+    
+    if(blankstr(ping)) return -1;
+    if(strlen(ping) > MAX_MSGLEN) return -1;
+    
+    sprintf(raw, "PING :%s", ping);
+    return irc_send(raw, 1);
+}
+
 int irc_pong(char *ping) {
     char *data;
     char *splitFrmSp, *sepFrmCol;
@@ -284,7 +294,7 @@ int irc_quit(char *quitmsg) {
     r1 = irc_send(raw, 1);
     
     memset(raw, '\0', 512);
-    if(blankstr(quitmsg)) {
+    if(!blankstr(quitmsg)) {
         if(strlen(quitmsg) > 464) return -1;
         sprintf(raw, "QUIT :%s", quitmsg);
     }

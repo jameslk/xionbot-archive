@@ -17,7 +17,8 @@ http://www.gnu.org/licenses/gpl.txt
 
 int irc_user(char *user, char *servname, char *fullname);
 int irc_pass(char *pass);
-int irc_pong(char *pong);
+int irc_ping(char *ping);
+int irc_pong(char *ping);
 int irc_nick(char *nick);
 int irc_mode(char *target, char *format, ...);
 int irc_join(char *chan, char *pass);

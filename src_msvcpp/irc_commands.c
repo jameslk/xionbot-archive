@@ -46,9 +46,20 @@ int irc_pass(char *pass) {
     return irc_send(raw, 1);
 }
 
+int irc_ping(char *ping) {
+    clearstr(raw, MAX_LEN);
+    
+    if(blankstr(ping)) return -1;
+    if(strlen(ping) > MAX_MSGLEN) return -1;
+    
+    sprintf(raw, "PING :%s", ping);
+    return irc_send(raw, 1);
+}
+
 int irc_pong(char *ping) {
     char *data;
     char *splitFrmSp, *sepFrmCol;
+    int pos = 0;
     
     clearstr(raw, MAX_LEN);
     
@@ -59,18 +70,18 @@ int irc_pong(char *ping) {
         return 0;
         
     xstrcpy(data, ping, 513);
-    strtok(data, " ");
-    splitFrmSp = strtok(NULL, " ");
-    if(!splitFrmSp) {
+    xstrtok(data, " ", &pos);
+    splitFrmSp = xstrtok(data, " ", &pos);
+    if(blankstr(splitFrmSp)) {
         freem(data);
-        return -2;
+        return 0;
     }
     
     xstrcpy(data, splitFrmSp, 513);
-    sepFrmCol = strtok(data, ":");
-    if(!sepFrmCol) {
+    sepFrmCol = xstrtok(data, ":", NULL);
+    if(blankstr(sepFrmCol)) {
         freem(data);
-        return -2;
+        return 0;
     }
     
     sprintf(raw, "PONG :%s", sepFrmCol);
@@ -368,7 +379,7 @@ int irc_quit(char *quitmsg) {
     r1 = irc_send(raw, 1);
     
     memset(raw, '\0', 512);
-    if(blankstr(quitmsg)) {
+    if(!blankstr(quitmsg)) {
         if(strlen(quitmsg) > 464) return -1;
         sprintf(raw, "QUIT :%s", quitmsg);
     }
