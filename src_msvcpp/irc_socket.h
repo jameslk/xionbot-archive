@@ -25,6 +25,7 @@ unsigned int flckmsg;
 #define CERROR_HOSTTOIPFAIL 3
 #define CERROR_SOCKFAIL 4
 #define CERROR_CONFAIL 5
+#define CERROR_EVENTLOOPFAIL 6
 unsigned int irc_connect(unsigned char *servaddr, int servport);
 
 void irc_disconnect(void);
