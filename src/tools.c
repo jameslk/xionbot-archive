@@ -29,6 +29,12 @@ void _make_warning(char *warnmsg, char *file, const int line) {
     return ;
 }
 
+void make_notice(char *notice) {
+    printf("*** %s\n", notice);
+    log_write("*** %s", notice);
+    return ;
+}
+
 char* mkupper(char *buf, const char *str) {
     char *tupr;
     unsigned int i = 0;

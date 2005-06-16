@@ -18,6 +18,7 @@ void _make_error(char *errmsg, char *file, const int line);
 void _make_warning(char *warnmsg, char *file, const int line);
 #define make_error(ERR) _make_error(ERR, __FILE__, __LINE__)
 #define make_warning(WARN) _make_warning(WARN, __FILE__, __LINE__)
+void make_notice(char *notice);
 char* mkupper(char *buf, const char *str);
 char* mklower(char *buf, const char *str);
 unsigned int istrcmp(char *string1, char *string2);
