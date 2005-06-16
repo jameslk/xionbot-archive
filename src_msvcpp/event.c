@@ -122,9 +122,9 @@ unsigned int event_call(unsigned long event_id, unsigned int arg_count, ...) {
     }
     
     for(event = event_first;event != NULL;event = next) {
+        next = event->next;
         if(event->event_id & event_id) {
             event->func(event, event_id, event->data, data);
-            next = event->next;
             if(event->call_once)
                 event_unhook(event);
         }
