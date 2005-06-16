@@ -19,7 +19,7 @@ char* irc_get_host(char *buf, char *raw) {
     char *data;
     char *seperateFrmSp;
     char *host;
-    int pos;
+    int pos = 0;
     
     if(buf == NULL)
         return buf;
@@ -30,16 +30,17 @@ char* irc_get_host(char *buf, char *raw) {
     
     xstrcpy(data, raw, MAX_LEN);
     
-    xstrtok(data, " ", &pos, 1);
-    seperateFrmSp = xstrtok(data, " ", &pos, 0);
+    xstrtok(data, " ", &pos);
+    seperateFrmSp = xstrtok(data, " ", &pos);
     if(seperateFrmSp == NULL) {
         freem(data);
         return NULL;
     }
     
     xstrcpy(data, seperateFrmSp, MAX_LEN);
-    xstrtok(data, "@", &pos, 1);
-    host = xstrtok(data, "@", &pos, 0);
+    pos = 0;
+    xstrtok(data, "@", &pos);
+    host = xstrtok(data, "@", &pos);
     if(host == NULL) {
         freem(data);
         return NULL;
@@ -65,14 +66,14 @@ char* irc_get_mask(char *buf, char *raw) {
     
     xstrcpy(data, raw, MAX_LEN);
     
-    seperateFrmSp = xstrtok(data, " ", NULL, 1);
+    seperateFrmSp = xstrtok(data, " ", NULL);
     if(seperateFrmSp == NULL) {
         freem(data);
         return NULL;
     }
     
     xstrcpy(data, seperateFrmSp, MAX_LEN);
-    mask = xstrtok(data, ":", NULL, 1);
+    mask = xstrtok(data, ":", NULL);
     if(mask == NULL) {
         freem(data);
         return NULL;
@@ -98,7 +99,7 @@ char* irc_get_nick(char *buf, char *raw) {
     
     xstrcpy(data, raw, MAX_LEN);
     
-    seperateFrmCol = xstrtok(data, ":", NULL, 1);
+    seperateFrmCol = xstrtok(data, ":", NULL);
     if(seperateFrmCol == NULL) {
         freem(data);
         return NULL;
@@ -106,9 +107,9 @@ char* irc_get_nick(char *buf, char *raw) {
     
     strcpy(data, seperateFrmCol);
     if(strchr(data, '!') == NULL)
-        nick = xstrtok(data, " ", NULL, 1);
+        nick = xstrtok(data, " ", NULL);
     else
-        nick = xstrtok(data, "!", NULL, 1);
+        nick = xstrtok(data, "!", NULL);
     if(nick == NULL) {
         freem(data);
         return NULL;
@@ -123,7 +124,7 @@ char* irc_get_nick(char *buf, char *raw) {
 char* irc_get_target(char *buf, char *raw) {  
     char *data;
     char *target;
-    int pos;
+    int pos = 0;
     
     if(buf == NULL)
         return buf;
@@ -134,9 +135,9 @@ char* irc_get_target(char *buf, char *raw) {
     
     xstrcpy(data, raw, MAX_LEN);
     
-    xstrtok(data, " ", &pos, 1);
-    xstrtok(data, " ", &pos, 0);
-    target = xstrtok(data, " ", &pos, 0);
+    xstrtok(data, " ", &pos);
+    xstrtok(data, " ", &pos);
+    target = xstrtok(data, " ", &pos);
     if(target == NULL) {
         freem(data);
         return NULL;
@@ -168,7 +169,7 @@ char* irc_get_msg(char *buf, char *raw) {
 char* irc_get_cmdtype(char *buf, char *raw) {
     char *data;
     char *type;
-    int pos;
+    int pos = 0;
     
     if(buf == NULL)
         return buf;
@@ -178,8 +179,8 @@ char* irc_get_cmdtype(char *buf, char *raw) {
         return NULL;
     
     xstrcpy(data, raw, MAX_LEN);
-    xstrtok(data, " ", &pos, 1);
-    type = xstrtok(data, " ", &pos, 0);
+    xstrtok(data, " ", &pos);
+    type = xstrtok(data, " ", &pos);
     if(type == NULL) {
         freem(data);
         return NULL;
@@ -203,7 +204,7 @@ char* irc_get_cmdtype2(char *buf, char *raw) {
         return NULL;
     
     xstrcpy(data, raw, MAX_LEN);
-    type = xstrtok(data, " ", NULL, 1);
+    type = xstrtok(data, " ", NULL);
     if(type == NULL) {
         freem(data);
         return NULL;
@@ -226,7 +227,7 @@ char* irc_get_servname(char *buf, char *raw) {
     
     servname = (char*)callocm(256, sizeof(char));
     xstrcpy(servname, raw+1, 256);
-    strcpy(buf, xstrtok(servname, " ", NULL, 1));
+    strcpy(buf, xstrtok(servname, " ", NULL));
     
     freem(servname);
     return buf;
@@ -247,7 +248,7 @@ char* irc_get_netname(char *buf, char *raw) {
         return buf;
     }
     xstrcpy(netname, str+8, 32);
-    strcpy(buf, xstrtok(netname, " ", NULL, 1));
+    strcpy(buf, xstrtok(netname, " ", NULL));
     
     freem(netname);
     return buf;
@@ -314,4 +315,33 @@ unsigned int irc_char_type(char c, unsigned int type) {
     
     freem(match);
     return 0;
+}
+
+char ctrlcodes[] = {C_BOLD, C_ULINE, C_COLOR, C_REVERSE};
+unsigned int irc_strip_ctrlcodes(char **bufp, const char *text) {
+    char *buf;
+    unsigned int text_len;
+    
+    *bufp = NULL;
+    
+    if(blankstr(text))
+        return 0;
+    
+    text_len = strlen(text);
+    
+    if(text_len < 2)
+        return 0;
+    
+    buf = (char*)callocm(text_len+1, sizeof(char*));
+    
+    xstrcpy(buf, text, text_len+1);
+    
+    if(blankstr(strrtok(buf, ctrlcodes))) {
+        freem(buf);
+        return 0;
+    }
+    
+    *bufp = buf;
+    
+    return text_len+1;
 }
