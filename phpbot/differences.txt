@@ -1,2 +1,4 @@
 main.c
 main.h
+irc_commands.c
+irc_commands.h
