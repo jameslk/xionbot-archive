@@ -8,6 +8,7 @@ http://www.gnu.org/licenses/gpl.txt
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "main.h"
 #include "conf.h"
@@ -134,7 +135,7 @@ unsigned int irc_parseraw(char *raw) {
         if(!r)
             make_warning("irc_parse_ping failed.");
     }
-    PARSECMD2("PONG") {
+    PARSECMD("PONG") {
         r = irc_parse_pong(raw);
         if(!r)
             make_warning("irc_parse_pong failed.");
@@ -223,6 +224,10 @@ int irc_start(unsigned int next) {
             user = user_adduser(bot.nick);
             user->relate = 1;
             me = user;
+            
+            recieved_ping = 1;
+            if(bot.ping_timeout)
+                mkthread(irc_pingserver, NULL);
             break;
             
         case 2:
@@ -262,6 +267,8 @@ PARSE_FUNC(ping) {
     if(ping == NULL)
         return 0;
     
+    recieved_ping = 1;
+    
     irc_get_msg(ping, raw);
     if(!blankstr(ping))
         event_call(EVENT_IRCPING, 2, raw, ping);
@@ -278,6 +285,11 @@ PARSE_FUNC(pong) {
         return 0;
     
     irc_get_msg(pong, raw);
+    
+    recieved_ping = 1;
+    if(atol(pong))
+        printf("*** SERVER PONG: Ping delay of %d second(s).\n", time(NULL)-atol(pong));
+    
     if(!blankstr(pong))
         event_call(EVENT_IRCPONG, 2, raw, pong);
     

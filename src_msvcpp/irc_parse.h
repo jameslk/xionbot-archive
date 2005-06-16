@@ -32,3 +32,4 @@ PARSE_FUNC(353);
 PARSE_FUNC(367);
 
 unsigned int mynickison;
+unsigned int recieved_ping;
