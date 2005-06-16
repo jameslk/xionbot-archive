@@ -12,9 +12,12 @@ http://www.gnu.org/licenses/gpl.txt
 
 #include "main.h"
 #include "mod-weburlcache.h"
+#include "irc_tools.h"
 
 unsigned int urlmod_init(void) {
-    event_hook(urlm_scan_text, 0, (EVENT_IRCPRIVMSG | EVENT_IRCNOTICE | EVENT_IRCQUIT), 0, NULL);
+    #ifdef URLM_ENABLED
+    event_hook(urlm_scan_text, 0, (EVENT_IRCRPL_TOPIC | EVENT_IRCPRIVMSG | EVENT_IRCNOTICE | EVENT_IRCQUIT), 0, NULL);
+    #endif
     
     return 1;
 }
@@ -38,7 +41,6 @@ EVENT_FUNC(urlm_scan_text) {
     while(size) {
         size = urlm_get_url(&url, text, &pos);
         if(size) {
-            print_svar(url);
             urlm_write_url(url);
             freem(url);
         }
@@ -47,11 +49,10 @@ EVENT_FUNC(urlm_scan_text) {
     return ;
 }
 
-char url_strings[][8] = {"www.*", "http://*", "ftp://*"};
-unsigned int urlm_get_url(char **bufp, const char *text, unsigned int *position) {
-    char *buf;
-    const char *str;
-    unsigned int text_len, url_type, i, ii, next = 0, match = 0, pos;
+char url_strings[][9] = {"www.*", "http://*", "ftp://*"};
+unsigned int urlm_get_url(char **bufp, char *text, unsigned int *position) {
+    char *str;
+    unsigned int text_len, url_type, segment_len, i, offset = 0, pos, match;
     
     if(blankstr(text))
         return 0;
@@ -61,46 +62,52 @@ unsigned int urlm_get_url(char **bufp, const char *text, unsigned int *position)
     }
     else {
         pos = *position;
-        str = text+pos;
+        text = text+pos;
     }
-    text_len = strlen(text)-pos;
+    text_len = strlen(text);
     
-    buf = (char*)callocm(text_len+1, sizeof(char));
-    if(buf == NULL)
+    str = (char*)callocm(text_len+1, sizeof(char));
+    if(str == NULL)
         return 0;
-        
-    for(url_type = 0;url_type < 3;url_type++) {
-        for(i = 0, ii = 0;i < text_len;i++) {
-            if(match) {
-                if(str[i] == ' ') {
-                    *bufp = buf;
-                    *position = pos+i;
-                    return ii;
-                }
-                buf[ii++] = str[i];
-            }
-            else if(url_strings[url_type][next] == '*') {
-                if(str[i] == ' ') {
-                    freem(buf);
-                    return 0;
-                }
-                match = 1;
-                buf[ii++] = str[i];
-            }
-            else if(tolower(str[i]) == url_strings[url_type][next]) {
-                next++;
-                buf[ii++] = str[i];
-            }
-        }
-        if(match) {
-            *bufp = buf;
-            *position = pos+i;
-            return ii;
-        }
-        clearstr(buf, text_len+1);
+    
+    xstrcpy(str, text, text_len+1);
+    for(i = 0;i < text_len;i++) {
+        if(text[i] == ' ')
+            str[i] = 0;
     }
     
-    freem(buf);
+    for(offset = 0;offset < text_len;) {
+        segment_len = strlen(str+offset);
+        for(url_type = 0;url_type < 3;url_type++) {
+            match = 0;
+            if(segment_len < strlen(url_strings[url_type]))
+                continue;
+            
+            for(i = 0;url_strings[url_type][i] != 0;i++) {
+                if(tolower(str[i+offset]) == url_strings[url_type][i]) {
+                    match++;
+                }
+                else if(match == strlen(url_strings[url_type])-1) {
+                    if(url_strings[url_type][i] == '*') {
+                        *bufp = (char*)callocm(segment_len+1, sizeof(char));
+                        if(*bufp == NULL) {
+                            freem(str);
+                            return 0;
+                        }
+                        
+                        xstrcpy(*bufp, str+offset, segment_len+1);
+                        freem(str);
+                        
+                        *position = pos+offset+segment_len+1;
+                        return segment_len;
+                    }
+                }
+            }
+        }
+        offset += segment_len+1;
+    }
+    
+    freem(str);
     return 0;
 }
 
@@ -124,4 +131,6 @@ unsigned int urlm_write_url(char *url) {
         return 0;
     
     fclose(fptr);
+    
+    return 1;
 }
