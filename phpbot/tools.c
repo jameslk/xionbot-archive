@@ -9,6 +9,7 @@ http://www.gnu.org/licenses/gpl.txt
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <time.h>
 
 #include "main.h"
@@ -201,39 +202,53 @@ char* strrtok(char *str, const char *tok) {
     return str;
 }
 
-char* xstrtok(char *str, const char *tok, int *pos, int start) {
+char* xstrtok(char *str, const char *tok, int *pos) {
     int i, x;
-    unsigned int match;
+    unsigned int match = 0, move = 0;
+    char start;
     
     if(blankstr(tok))
         return str;
     
-    if(start) {
-        i = 0;
+    if(pos != NULL) {
+        i = *pos;
+        start = 0;
     }
     else {
-        if(pos != NULL)
-            i = *pos;
+        i = 0;
+        start = 1;
     }
     
-    for(x = 0, match = 0;str[i];i++, x++) {
+    for(x = 0;str[i];i++, x++) {
         if(str[i] == tok[match]) {
             if(!tok[++match]) {
-                while(match--) str[i - match] = 0;
+                while(match--) {
+                    move++;
+                    str[i - match] = 0;
+                }
                 i++;
                 x++;
                 
                 if(pos != NULL)
                     *pos = i;
                 
-                if(start)
-                    return str;
-                else
-                    return str + (i - x);
+                if(start) {
+                    if(*str)
+                        return str;
+                    else
+                        return str+move;
+                }
+                else {
+                    if(str[i-x])
+                        return str + (i-x);
+                    else
+                        return str + (move+i-x);
+                }
             }
         }
     }
-    if(pos != NULL)
+    
+    if(!start)
         *pos = i;
     
     if(start) {
@@ -421,7 +436,7 @@ char* conf_replace_alias(char *str) {
     return str;
 }
 
-unsigned int make_argument_array(char ***buf, const char *str) {
+unsigned int make_argument_array(char ***bufp, const char *str) {
     unsigned int x = 0, y = 0, z = 0, count = 0, length;
     char *temp, *backptr;
     char **argv;
@@ -481,13 +496,13 @@ unsigned int make_argument_array(char ***buf, const char *str) {
         y++;
     }
     
-    *buf = argv;
+    *bufp = argv;
     
     freem(backptr);
     return count;
 }
 
-unsigned int bind_argument_array(char **buf, char **argv, unsigned int argc, unsigned int offset) {
+unsigned int bind_argument_array(char **bufp, char **argv, unsigned int argc, unsigned int offset) {
     unsigned int i, size = 0;
     char *temp;
     
@@ -499,7 +514,7 @@ unsigned int bind_argument_array(char **buf, char **argv, unsigned int argc, uns
         if(temp == NULL)
             return 0;
         strcpy(temp, argv[0]);
-        *buf = temp;
+        *bufp = temp;
         return 1;
     }
     
@@ -516,11 +531,26 @@ unsigned int bind_argument_array(char **buf, char **argv, unsigned int argc, uns
             strcat(temp, " ");
     }
     
-    *buf = temp;
+    *bufp = temp;
     
     return 1;
 }
 
+#if defined(PLATFORM_POSIX)
+unsigned int mkthread(void*(*func)(void*), void *param) {
+    pthread_t thread;
+    int retval;
+    
+    retval = pthread_create(&thread, NULL, func, (void*)param);
+    
+    if(retval != 0) {
+        make_error("Failed to create new thread.");
+        return 0;
+    }
+    
+    return 1;
+}
+#elif defined(PLATFORM_WINDOWS)
 unsigned int mkthread(LPTHREAD_START_ROUTINE func, LPVOID param) {
     DWORD thdId;
     HANDLE thdHandle;
@@ -537,3 +567,4 @@ unsigned int mkthread(LPTHREAD_START_ROUTINE func, LPVOID param) {
     
     return 1;
 }
+#endif
