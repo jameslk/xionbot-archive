@@ -49,7 +49,7 @@ int irc_pass(char *pass) {
 int irc_pong(char *ping) {
     char *data;
     char *splitFrmSp, *sepFrmCol;
-    int pos;
+    int pos = 0;
     
     clearstr(raw, MAX_LEN);
     
@@ -60,18 +60,18 @@ int irc_pong(char *ping) {
         return 0;
         
     xstrcpy(data, ping, 513);
-    xstrtok(data, " ", &pos, 1);
-    splitFrmSp = xstrtok(data, " ", &pos, 0);
-    if(!splitFrmSp) {
+    xstrtok(data, " ", &pos);
+    splitFrmSp = xstrtok(data, " ", &pos);
+    if(blankstr(splitFrmSp)) {
         freem(data);
-        return -2;
+        return 0;
     }
     
     xstrcpy(data, splitFrmSp, 513);
-    sepFrmCol = xstrtok(data, ":", &pos, 1);
-    if(!sepFrmCol) {
+    sepFrmCol = xstrtok(data, ":", NULL);
+    if(blankstr(sepFrmCol)) {
         freem(data);
-        return -2;
+        return 0;
     }
     
     sprintf(raw, "PONG :%s", sepFrmCol);
