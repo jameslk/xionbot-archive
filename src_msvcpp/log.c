@@ -46,7 +46,7 @@ unsigned int log_write(char *format, ...) {
 unsigned int log_clean(void) {
     FILE *fptr;
     
-    if(XION_FRESH_LOG) {
+    if(bot.fresh_log) {
         fptr = fopen(XION_LOG, "w");
         if(!fptr)
             return 0;
