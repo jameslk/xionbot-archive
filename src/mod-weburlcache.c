@@ -46,6 +46,9 @@ EVENT_FUNC(urlm_scan_text) {
         }
     }
     
+    freem(msg);
+    freem(text);
+    
     return ;
 }
 
