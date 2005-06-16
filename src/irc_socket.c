@@ -21,6 +21,8 @@ unsigned int q_maxbytes = 0;
 unsigned int q_maxqueue = 0;
 unsigned int q_floodcheck_msg = 0;
 
+WSAEVENT wsevent;
+
 unsigned int irc_raw(char *raw) {
     if(raw == NULL)
         return 0;
@@ -229,30 +231,43 @@ unsigned int irc_connect(unsigned char *servaddr, int servport) {
         return CERROR_CONFAIL;
     }
     
+    bot.current_try = 0;
+    if(mkthread(irc_sockeventloop, NULL) == 0) {
+        getchar();
+        return CERROR_EVENTLOOPFAIL;
+    }
+    
     return CERROR_SUCCESS;
 }
 
 void irc_disconnect(void) {
-    irc_quit("selfkill.techcore.org/xionbot");
     shutdown(bot.sock, SD_BOTH);
     closesocket(bot.sock);
+    WSACloseEvent(wsevent);
     WSACleanup();
+    bot.connected = 0;
+    make_notice("Disconnected.");
     return ;
 }
 
 THREADFUNC(irc_sockeventloop) {
-    char *data = (char*)callocm(513, sizeof(char));
+    char *data;
     int i = 0;
-    WSAEVENT wsevent = WSACreateEvent();
     WSANETWORKEVENTS netevents;
     
+    wsevent = WSACreateEvent();    
     WSAEventSelect(bot.sock, wsevent, (FD_CONNECT | FD_READ | FD_CLOSE));
+    
+    data = data = (char*)callocm(513, sizeof(char));
+    if(data == NULL)
+        return 0;
     
     while(1) {
         if(WSAWaitForMultipleEvents(1, &wsevent, 0, WSA_INFINITE, 0) == WSA_WAIT_EVENT_0) {
             WSAEnumNetworkEvents(bot.sock, wsevent, &netevents);
             if(netevents.lNetworkEvents & FD_CONNECT) {
                 /* Connected. */
+                bot.connected = 1;
                 irc_start(1);
             }
             else if(netevents.lNetworkEvents & FD_READ) {
@@ -271,17 +286,18 @@ THREADFUNC(irc_sockeventloop) {
             }
             else if(netevents.lNetworkEvents & FD_CLOSE) {
                 /* We've been disconnected. */
+                bot.connected = 0;
                 if(bot.current_try <= bot.maxretry) {
                     bot.current_try++;
                     i = bot.current_try;
                     irc_disconnect();
                     bot.current_try = i;
-                    printf("Disconnected. Reconnecting in...\n");
+                    make_notice("Disconnected. Reconnecting in...");
                     for(i = 60;i > 0;i--) {
                         printf("%d\n", i);
                         waits(1);
                     }
-                    memset(data, '\0', 513);
+                    clearstr(data, 513);
                     printf("Connecting to %s:%d... ", bot.servaddr, bot.servport);
                     if((i = irc_connect(bot.servaddr, bot.servport)) != 0) {
                         printf("Failed to connect. ERROR %d:%d\n\n", WSAGetLastError(), i);
@@ -299,6 +315,9 @@ THREADFUNC(irc_sockeventloop) {
                     break;
                 }
             }
+        }
+        else {
+            break;
         }
     }
     
