@@ -25,6 +25,7 @@ http://www.gnu.org/licenses/gpl.txt
 #include "irc_botcmd.h"
 
 #include "mod-irc_relay.h"
+#include "mod-weburlcache.h"
 
 /* A list for keeping track of everything
    that needs to be initiliazed. */
@@ -297,6 +298,9 @@ unsigned int init(void) {
                                 atoi(get_itemtok(conftok, bot.admin_array[i], 5)));
         }
     }
+    
+    /* URL Module: mod-weburlcache.c */
+    urlmod_init();
     
     freem(conftok);
     free_2d_array(xlines, xcount);
