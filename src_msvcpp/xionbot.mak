@@ -54,6 +54,7 @@ CLEAN :
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\mod-irc_relay.obj"
+	-@erase "$(INTDIR)\mod-weburlcache.obj"
 	-@erase "$(INTDIR)\tools.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(OUTDIR)\xionbot.exe"
@@ -83,7 +84,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\log.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\mod-irc_relay.obj" \
-	"$(INTDIR)\tools.obj"
+	"$(INTDIR)\tools.obj" \
+	"$(INTDIR)\mod-weburlcache.obj"
 
 "$(OUTDIR)\xionbot.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -116,6 +118,7 @@ CLEAN :
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\mod-irc_relay.obj"
+	-@erase "$(INTDIR)\mod-weburlcache.obj"
 	-@erase "$(INTDIR)\tools.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -148,7 +151,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\log.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\mod-irc_relay.obj" \
-	"$(INTDIR)\tools.obj"
+	"$(INTDIR)\tools.obj" \
+	"$(INTDIR)\mod-weburlcache.obj"
 
 "$(OUTDIR)\xionbot.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -266,6 +270,11 @@ SOURCE=.\main.c
 SOURCE=".\mod-irc_relay.c"
 
 "$(INTDIR)\mod-irc_relay.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=".\mod-weburlcache.c"
+
+"$(INTDIR)\mod-weburlcache.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\tools.c
