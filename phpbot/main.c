@@ -79,8 +79,8 @@ int main(int argc, char *argv[]) {
     
     printf("Connecting to %s:%d... ", bot.servaddr, bot.servport);
     if((err = irc_connect(bot.servaddr, bot.servport)) != 0) {
-        printf("Failed to connect. ERROR %d:%d\n\n", WSAGetLastError(), err);
-        log_write("Connecting failed with code: %d:%d", WSAGetLastError(), err);
+        printf("Failed to connect. ERROR %d\n\n", err);
+        log_write("Connecting failed with code: %d", err);
         printf("Press Enter key to continue.");
         getchar();
         return 0;
@@ -105,7 +105,6 @@ int main(int argc, char *argv[]) {
     }
     
     irc_quit(NULL);
-    irc_disconnect();
     
     PHPE_END
     
@@ -126,11 +125,30 @@ void extern_exit(int info) {
         log_write("*** Recieved CTRL-C...");
     
     irc_quit("Program Terminated");
-    irc_disconnect();
     free_xion_memory();
     event_call(EVENT_EXIT, 0);
     log_write("*** Program ended successfully. Allocation Calls: %d Free Calls: %d", alloc_calls, free_calls);
     exit(EXIT_SUCCESS);
+    
+    return ;
+}
+
+/* Use this instead of exit() to prevent memory leaks */
+void clean_exit(unsigned int error) {
+    extern unsigned long alloc_calls;
+    extern unsigned long free_calls;
+    
+    irc_disconnect();
+    free_xion_memory();
+    event_call(EVENT_EXIT, 0);
+    if(error) {
+        log_write("*** Program was halted due to an error. Allocation Calls: %d Free Calls: %d", alloc_calls, free_calls);
+        exit(EXIT_FAILURE);
+    }
+    else {
+        log_write("*** Program was halted. Allocation Calls: %d Free Calls: %d", alloc_calls, free_calls);
+        exit(EXIT_SUCCESS);
+    }
     
     return ;
 }
@@ -212,6 +230,7 @@ void free_xion_memory(void) {
     return ;
 }
 
+/* This function should not be called more than once */
 unsigned int init(void) {
     char **xlines, **clines;
     char *conftok = (char*)callocm(CONF_MAX_ITEMLEN, sizeof(char));
@@ -232,6 +251,8 @@ unsigned int init(void) {
     init_handle(&me);
     init_handle(&bc_first);
     init_handle(&bc_last);
+    
+    bot.connected = 0;
     
     xstrcpy(bot.config, XION_CONFIG, 260);
     
