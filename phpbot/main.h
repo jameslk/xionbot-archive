@@ -9,9 +9,9 @@ http://www.gnu.org/licenses/gpl.txt
 #include "irc_def.h"
 
 /* Xion Main Macros */
-#define XION_VERSION "2.3b"
+#define XION_VERSION "2.4b"
 #define XION_PHPMOD_VERSION "1.0b"
-#define XION_VERSION_MSG "XionBot v2.3b and PHP Module 1.0b [xionbot.sourceforge.net]"
+#define XION_VERSION_MSG "XionBot v2.4b and PHP Module 1.0b [xionbot.sourceforge.net]"
 
 #define XION_ERROR_MSG "XionBot ERROR:"
 #define XION_WARN_MSG "XionBot WARNING:"
@@ -41,7 +41,7 @@ struct xionbot {
     char netname[33];
     char servname[257];
     char servaddr[257];
-    unsigned int servport;
+    unsigned short servport;
     char servpass[MAX_PASSLEN];
     /* // */
     char config[261];
@@ -70,6 +70,7 @@ struct xionbot {
 
 /* Function Prototypes */
 void extern_exit(int info);
+void clean_exit(unsigned int error);
 void dispsplash(void);
 unsigned int _init_handle(void **ptr);
 #define init_handle(HANDLE) _init_handle((void*)HANDLE)
