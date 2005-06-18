@@ -302,8 +302,8 @@ int irc_quit(char *quitmsg) {
         sprintf(raw, "QUIT");
     }
     
-    bot.current_try = (bot.maxretry+1);
     r2 = irc_send(raw, 1);
+    irc_disconnect();
     
     if(r1 != 1) return r1;
     else if(r2 != 1) return r2;
