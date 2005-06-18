@@ -10,7 +10,6 @@ http://www.gnu.org/licenses/gpl.txt
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <winsock2.h>
 
 #include "main.h"
 #include "irc_tools.h"
@@ -290,11 +289,11 @@ THREADFUNC(irc_pingserver) {
                 irc_disconnect();
                 waits(3);
                 if((i = irc_connect(bot.servaddr, bot.servport)) != 0) {
-                        printf("Failed to connect. ERROR %d:%d\n\n", WSAGetLastError(), i);
-                        log_write("Connecting failed with code: %d:%d", WSAGetLastError(), i);
+                        printf("Failed to connect. ERROR %d\n\n", i);
+                        log_write("Connecting failed with code: %d", i);
                         printf("Press Enter key to continue.");
                         getchar();
-                        exit(1);
+                        clean_exit(1);
                 }
                 break;
             }
@@ -364,14 +363,13 @@ unsigned int irc_strip_ctrlcodes(char **bufp, const char *text) {
     if(blankstr(text))
         return 0;
     
-    text_len = strlen(text);
+    text_len = strlen(text)+1;
     
-    if(text_len < 2)
+    buf = (char*)callocm(text_len, sizeof(char*));
+    if(buf == NULL)
         return 0;
     
-    buf = (char*)callocm(text_len+1, sizeof(char*));
-    
-    xstrcpy(buf, text, text_len+1);
+    xstrcpy(buf, text, text_len);
     
     if(blankstr(strrtok(buf, ctrlcodes))) {
         freem(buf);
@@ -379,6 +377,5 @@ unsigned int irc_strip_ctrlcodes(char **bufp, const char *text) {
     }
     
     *bufp = buf;
-    
-    return text_len+1;
+    return strlen(buf);
 }
