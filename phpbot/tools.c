@@ -158,8 +158,11 @@ void _freem(void **memblock) {
     free(*memblock);
     *memblock = NULL;
     
-    if(++free_calls > alloc_calls)
-        make_warning("The number of free calls is greater than allocated calls.");
+    if(++free_calls > alloc_calls) {
+        alloc_calls = 0;
+        free_calls = 0;
+        make_warning("The number of free calls is greater than allocated calls (counters reset).");
+    }
     
     return ;
 }
