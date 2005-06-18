@@ -9,9 +9,18 @@ http://www.gnu.org/licenses/gpl.txt
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <winsock2.h>
 
 #include "main.h"
+
+#if defined(PLATFORM_WINDOWS)
+    #include <winsock2.h>
+#elif defined(PLATFORM_POSIX)
+    #include <unistd.h>
+    #include <sys/types.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
+#endif
+
 #include "irc_socket.h"
 #include "irc_parse.h"
 #include "irc_commands.h"
@@ -20,8 +29,6 @@ unsigned int q_bytes = 0;
 unsigned int q_maxbytes = 0;
 unsigned int q_maxqueue = 0;
 unsigned int q_floodcheck_msg = 0;
-
-WSAEVENT wsevent;
 
 unsigned int irc_raw(char *raw) {
     if(raw == NULL)
@@ -200,6 +207,8 @@ unsigned int irc_recv(char *buf) {
 unsigned int irc_connect(unsigned char *servaddr, int servport) {
     struct sockaddr_in addr;
     struct hostent *hosttoip;
+    
+    #ifdef PLATFORM_WINDOWS
     WSADATA wsa;
     
     if(WSAStartup(0x0202, &wsa)) {
@@ -211,14 +220,19 @@ unsigned int irc_connect(unsigned char *servaddr, int servport) {
         WSACleanup();
         return CERROR_WSOLD;
     }
+    #endif
     
     if(!(hosttoip = gethostbyname(servaddr))) {
+        #ifdef PLATFORM_WINDOWS
         WSACleanup();
+        #endif
         return CERROR_HOSTTOIPFAIL;
     }
     
     if((bot.sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+        #ifdef PLATFORM_WINDOWS
         WSACleanup();
+        #endif
         return CERROR_SOCKFAIL;
     }
     
@@ -227,11 +241,12 @@ unsigned int irc_connect(unsigned char *servaddr, int servport) {
     addr.sin_addr = *((struct in_addr*) hosttoip->h_addr);
     
     if(connect(bot.sock, (struct sockaddr*) &addr, sizeof(struct sockaddr)) == -1) {
+        #ifdef PLATFORM_WINDOWS
         WSACleanup();
+        #endif
         return CERROR_CONFAIL;
     }
     
-    bot.current_try = 0;
     if(mkthread(irc_sockeventloop, NULL) == 0) {
         getchar();
         return CERROR_EVENTLOOPFAIL;
@@ -242,9 +257,12 @@ unsigned int irc_connect(unsigned char *servaddr, int servport) {
 
 void irc_disconnect(void) {
     shutdown(bot.sock, SD_BOTH);
+    #if defined(PLATFORM_WINDOWS)
     closesocket(bot.sock);
-    WSACloseEvent(wsevent);
     WSACleanup();
+    #elif defined(PLATFORM_POSIX)
+    close(bot.sock);
+    #endif
     bot.connected = 0;
     make_notice("Disconnected.");
     return ;
@@ -253,45 +271,49 @@ void irc_disconnect(void) {
 THREADFUNC(irc_sockeventloop) {
     char *data;
     int i = 0;
-    WSANETWORKEVENTS netevents;
+    char finished = 0;
+    struct timeval tv;
+    fd_set const_read, const_error;
+    fd_set event_read, event_error;
     
-    wsevent = WSACreateEvent();    
-    WSAEventSelect(bot.sock, wsevent, (FD_CONNECT | FD_READ | FD_CLOSE));
+    FD_ZERO(&const_read);
+    FD_ZERO(&const_error);
+    FD_SET(bot.sock, &const_read);
+    FD_SET(bot.sock, &const_error);
     
-    data = data = (char*)callocm(513, sizeof(char));
+    data = (char*)callocm(MAX_LEN, sizeof(char));
     if(data == NULL)
         return 0;
     
-    while(1) {
-        if(WSAWaitForMultipleEvents(1, &wsevent, 0, WSA_INFINITE, 0) == WSA_WAIT_EVENT_0) {
-            WSAEnumNetworkEvents(bot.sock, wsevent, &netevents);
-            if(netevents.lNetworkEvents & FD_CONNECT) {
-                /* Connected. */
-                bot.connected = 1;
-                irc_start(1);
-            }
-            else if(netevents.lNetworkEvents & FD_READ) {
+    bot.connected = 1;
+    bot.current_try = 0;
+    irc_start(1);
+    
+    while(!finished) {
+        event_read = const_read;
+        event_error = const_error;
+        if(select(bot.sock+1, &event_read, NULL, &event_error, NULL)) {
+            if(FD_ISSET(bot.sock, &event_read)) {
                 /* We've recieved some data, let's do something with it. */
                 i = irc_recv(data);
                 if(i == 1) {
                     printf("RECV: %s\n", data);
                     if(!irc_parseraw(data))
                         make_warning("irc_parseraw failed.");
-                    memset(data, '\0', 513);
+                    clearstr(data, MAX_LEN);
                     bot.current_try = 0;
+                    recieved_ping = 1;
                 }
                 else if(i == -1) {
                     make_error("Failed to allocate memory for recieved data.");
                 }
             }
-            else if(netevents.lNetworkEvents & FD_CLOSE) {
-                /* We've been disconnected. */
+            if(FD_ISSET(bot.sock, &event_error)) {
+                /* We've been disconnected */
                 bot.connected = 0;
                 if(bot.current_try <= bot.maxretry) {
                     bot.current_try++;
-                    i = bot.current_try;
                     irc_disconnect();
-                    bot.current_try = i;
                     make_notice("Disconnected. Reconnecting in...");
                     for(i = 60;i > 0;i--) {
                         printf("%d\n", i);
@@ -302,22 +324,21 @@ THREADFUNC(irc_sockeventloop) {
                     if((i = irc_connect(bot.servaddr, bot.servport)) != 0) {
                         printf("Failed to connect. ERROR %d:%d\n\n", WSAGetLastError(), i);
                         log_write("Connecting failed with code: %d:%d", WSAGetLastError(), i);
-                        printf("Press Enter key to continue.");
+                        printf("Press Enter key to continue.\n");
                         getchar();
                         freem(data);
-                        exit(1);
+                        clean_exit(1);
                     }
                     printf("Connected.\n");
-                    WSAEventSelect(bot.sock, wsevent, (FD_CONNECT | FD_READ | FD_CLOSE));
                 }
                 else {
-                    printf("Disconnected.");
-                    break;
+                    freem(data);
+                    make_notice("The maximum retries have been exhausted, application ending.");
+                    printf("Press Enter key to continue.");
+                    getchar();
+                    clean_exit(0);
                 }
             }
-        }
-        else {
-            break;
         }
     }
     
