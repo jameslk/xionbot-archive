@@ -267,8 +267,6 @@ PARSE_FUNC(ping) {
     if(ping == NULL)
         return 0;
     
-    recieved_ping = 1;
-    
     irc_get_msg(ping, raw);
     if(!blankstr(ping))
         event_call(EVENT_IRCPING, 2, raw, ping);
@@ -286,7 +284,6 @@ PARSE_FUNC(pong) {
     
     irc_get_msg(pong, raw);
     
-    recieved_ping = 1;
     if(atol(pong))
         printf("*** SERVER PONG: Ping delay of %d second(s).\n", time(NULL)-atol(pong));
     
@@ -347,7 +344,7 @@ PARSE_FUNC(privmsg) {
     }
     
     alias = xstrtok(alias, " ", NULL);
-    if((!targtype) || (bot.ptrigger != ';')) {
+    if((targtype == TARG_CHAN) || ((bot.ptrigger != ';') && (targtype < 2))) {
         if(alias[0] != (targtype ? bot.ptrigger : bot.ctrigger))
             goto ignore;
         
