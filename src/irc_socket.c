@@ -272,7 +272,6 @@ THREADFUNC(irc_sockeventloop) {
     char *data;
     int i = 0;
     char finished = 0;
-    struct timeval tv;
     fd_set const_read, const_error;
     fd_set event_read, event_error;
     
