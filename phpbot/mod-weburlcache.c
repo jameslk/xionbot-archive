@@ -36,7 +36,11 @@ EVENT_FUNC(urlm_scan_text) {
     }
     
     irc_get_msg(msg, raw);
-    irc_strip_ctrlcodes(&text, msg);
+    
+    if(!irc_strip_ctrlcodes(&text, msg)) {
+        freem(msg);
+        return ;
+    }
     
     while(size) {
         size = urlm_get_url(&url, text, &pos);
