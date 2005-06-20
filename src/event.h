@@ -50,7 +50,6 @@ struct eventNode {
     unsigned int call_once;
 };
 
-unsigned long event_count;
 unsigned long event_types; /* Event types that have been registered. */
 struct eventNode *event_first;
 struct eventNode *event_last;
