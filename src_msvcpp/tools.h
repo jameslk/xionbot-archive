@@ -39,6 +39,19 @@ char* xstrcpy(char *dest, const char *src, size_t num);
 unsigned int blankstr(const char *str);
 unsigned int clearstr(char *str, unsigned long max);
 unsigned int matchstr(unsigned char *wildstr, unsigned char *regstr);
+
+struct dur_t {
+    unsigned int years;
+    unsigned int months;
+    unsigned int weeks;
+    unsigned int days;
+    unsigned int hours;
+    unsigned int minutes;
+    unsigned int seconds;
+};
+
+unsigned int duration(struct dur_t *buf, long tval);
+
 char* replace_alias(char *str);
 char* conf_replace_alias(char *str);
 unsigned int make_argument_array(char ***bufp, const char *str);
