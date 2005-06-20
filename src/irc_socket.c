@@ -175,23 +175,35 @@ unsigned int irc_send(char *raw, unsigned int override) {
     return 1;
 }
 
-unsigned int irc_recv(char *buf) {
+/* This should only be used by irc_sockeventloop */
+static int irc_recv(char *buf) {
     char *data;
     char byte;
     unsigned int i = 0, rn = 0;
+    int retval;
     
-    if((data = (char*)callocm(513, sizeof(char))) == NULL) return -1;
+    if((data = (char*)callocm(MAX_LEN, sizeof(char))) == NULL)
+        return -1;
     
-    for(i = 0;i < 513;i++) {
-        if(recv(bot.sock, &byte, 1, 0) <= 0) {
-            xstrcpy(buf, data, 513);
-            freem(data);
-            return 0;
+    for(i = 0;i < MAX_LEN;i++) {
+        retval = recv(bot.sock, &byte, 1, 0);
+        
+        if(retval < 1) {
+            if(!retval) {
+                freem(data);
+                return 0;
+            }
+            else {
+                xstrcpy(buf, data, MAX_LEN);
+                freem(data);
+                return -1;
+            }
         }
         
         if((byte == '\r') || (byte == '\n')) {
             rn++;
-            if(rn == 2) break;
+            if(rn == 2)
+                break;
         }
         else {
             data[i] = byte;
@@ -207,10 +219,16 @@ unsigned int irc_recv(char *buf) {
 unsigned int irc_connect(unsigned char *servaddr, int servport) {
     struct sockaddr_in addr;
     struct hostent *hosttoip;
-    
     #ifdef PLATFORM_WINDOWS
     WSADATA wsa;
+    #endif
     
+    if(eventloop_running) {
+        make_error("Attempt to connect while the event loop is still running -- halted.");
+        return CERROR_EVENTLOOPFAIL;
+    }
+    
+    #ifdef PLATFORM_WINDOWS
     if(WSAStartup(0x0202, &wsa)) {
         WSACleanup();
         return CERROR_STARTFAIL;
@@ -272,26 +290,23 @@ THREADFUNC(irc_sockeventloop) {
     char *data;
     int i = 0;
     char finished = 0;
-    fd_set const_read, const_error;
-    fd_set event_read, event_error;
+    fd_set const_read, event_read;
     
     FD_ZERO(&const_read);
-    FD_ZERO(&const_error);
     FD_SET(bot.sock, &const_read);
-    FD_SET(bot.sock, &const_error);
     
     data = (char*)callocm(MAX_LEN, sizeof(char));
     if(data == NULL)
         return 0;
     
+    eventloop_running = 1;
     bot.connected = 1;
     bot.current_try = 0;
     irc_start(1);
     
     while(!finished) {
         event_read = const_read;
-        event_error = const_error;
-        if(select(bot.sock+1, &event_read, NULL, &event_error, NULL)) {
+        if(select(bot.sock+1, &event_read, NULL, NULL, NULL)) {
             if(FD_ISSET(bot.sock, &event_read)) {
                 /* We've recieved some data, let's do something with it. */
                 i = irc_recv(data);
@@ -303,39 +318,42 @@ THREADFUNC(irc_sockeventloop) {
                     bot.current_try = 0;
                     recieved_ping = 1;
                 }
-                else if(i == -1) {
-                    make_error("Failed to allocate memory for recieved data.");
-                }
-            }
-            if(FD_ISSET(bot.sock, &event_error)) {
-                /* We've been disconnected */
-                bot.connected = 0;
-                if(bot.current_try <= bot.maxretry) {
-                    bot.current_try++;
-                    irc_disconnect();
-                    make_notice("Disconnected. Reconnecting in...");
-                    for(i = 60;i > 0;i--) {
-                        printf("%d\n", i);
-                        waits(1);
+                else if(!i) {
+                    /* We've been disconnected */
+                    bot.connected = 0;
+                    if(bot.current_try <= bot.maxretry) {
+                        bot.current_try++;
+                        irc_disconnect();
+                        make_notice("Disconnected. Reconnecting in...");
+                        for(i = 60;i > 0;i--) {
+                            printf("%d\n", i);
+                            waits(1);
+                        }
+                        clearstr(data, 513);
+                        printf("Connecting to %s:%d... ", bot.servaddr, bot.servport);
+                        eventloop_running = 0;
+                        if((i = irc_connect(bot.servaddr, bot.servport)) != 0) {
+                            printf("Failed to connect. ERROR %d:%d\n\n", WSAGetLastError(), i);
+                            log_write("Connecting failed with code: %d:%d", WSAGetLastError(), i);
+                            printf("Press Enter key to continue.\n");
+                            getchar();
+                            freem(data);
+                            clean_exit(1);
+                        }
+                        printf("Connected.\n");
+                        finished = 1;
                     }
-                    clearstr(data, 513);
-                    printf("Connecting to %s:%d... ", bot.servaddr, bot.servport);
-                    if((i = irc_connect(bot.servaddr, bot.servport)) != 0) {
-                        printf("Failed to connect. ERROR %d:%d\n\n", WSAGetLastError(), i);
-                        log_write("Connecting failed with code: %d:%d", WSAGetLastError(), i);
-                        printf("Press Enter key to continue.\n");
-                        getchar();
+                    else {
                         freem(data);
-                        clean_exit(1);
+                        make_notice("The maximum retries have been exhausted, application ending.");
+                        printf("Press Enter key to continue.");
+                        getchar();
+                        clean_exit(0);
                     }
-                    printf("Connected.\n");
                 }
                 else {
-                    freem(data);
-                    make_notice("The maximum retries have been exhausted, application ending.");
-                    printf("Press Enter key to continue.");
-                    getchar();
-                    clean_exit(0);
+                    /* recv() returned with -1 */
+                    make_warning("recv() returned with an error (-1).");
                 }
             }
         }
