@@ -64,6 +64,13 @@ struct xionbot {
     unsigned int admin_current_count;
 } bot;
 
+struct bot_stats {
+    long start_time;
+    unsigned long alloc_calls;
+    unsigned long free_calls;
+    unsigned long event_count;
+} stats;
+
 #include "log.h"
 #include "tools.h"
 
