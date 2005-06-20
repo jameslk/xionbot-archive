@@ -65,7 +65,7 @@ struct eventNode* event_hook(call_func func, unsigned int flags, unsigned long e
     
     if(newnode) {
         LL_ADDNODE(event, event_first, event_last)
-        event_count++;
+        stats.event_count++;
     }
     
     if((event_types & event_id) == 0)
@@ -95,7 +95,7 @@ unsigned int event_unhook(struct eventNode *event) {
     datalist_end(event->data);
     freem(event);
     
-    event_count--;
+    stats.event_count--;
     return 1;
 }
 
@@ -153,6 +153,6 @@ void event_free_data(void) {
     event_last = NULL;
     event_types = EVENT_NULL;
     
-    event_count = 0;
+    stats.event_count = 0;
     return ;
 }
