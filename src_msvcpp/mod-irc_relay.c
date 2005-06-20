@@ -188,11 +188,6 @@ BOT_CMD(relay) {
             return 0;
         }
         
-        if(is_relay(to_chan)) {
-            irc_notice_user(user->nick, 0, "Two-way relays are forbidden.");
-            return 0;
-        }
-        
         if(relayed_chan(to_chan, from_chan) != NULL) {
             irc_notice_user(user->nick, 0, "This relay is already setup.");
             return 0;
