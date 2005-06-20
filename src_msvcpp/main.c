@@ -8,6 +8,7 @@ http://www.gnu.org/licenses/gpl.txt
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <signal.h>
 
 #include "main.h"
@@ -52,6 +53,7 @@ int main(int argc, char *argv[]) {
     dispsplash();
     
     printf("Initializing... ");
+    stats.start_time = (long)time(NULL);
     if(!init()) {
         make_error("Initialization failed (init() is 0).");
         free_xion_memory();
@@ -98,22 +100,19 @@ int main(int argc, char *argv[]) {
     
     event_call(EVENT_EXIT, 0);
     
-    log_write("*** Program ended successfully. Allocation Calls: %d Free Calls: %d", alloc_calls, free_calls);
+    log_write("*** Program ended successfully. Allocation Calls: %d Free Calls: %d", stats.alloc_calls, stats.free_calls);
     
     return 0;
 }
 
 void extern_exit(int info) {
-    extern unsigned long alloc_calls;
-    extern unsigned long free_calls;
-    
     if(info == SIGINT)
         log_write("*** Recieved CTRL-C...");
     
     irc_quit("Program Terminated");
     free_xion_memory();
     event_call(EVENT_EXIT, 0);
-    log_write("*** Program ended successfully. Allocation Calls: %d Free Calls: %d", alloc_calls, free_calls);
+    log_write("*** Program ended successfully. Allocation Calls: %d Free Calls: %d", stats.alloc_calls, stats.free_calls);
     exit(EXIT_SUCCESS);
     
     return ;
@@ -121,18 +120,16 @@ void extern_exit(int info) {
 
 /* Use this instead of exit() to prevent memory leaks */
 void clean_exit(unsigned int error) {
-    extern unsigned long alloc_calls;
-    extern unsigned long free_calls;
-    
     irc_disconnect();
     free_xion_memory();
     event_call(EVENT_EXIT, 0);
     if(error) {
-        log_write("*** Program was halted due to an error. Allocation Calls: %d Free Calls: %d", alloc_calls, free_calls);
+        log_write("*** Program was halted due to an error. Allocation Calls: %d Free Calls: %d",
+            stats.alloc_calls, stats.free_calls);
         exit(EXIT_FAILURE);
     }
     else {
-        log_write("*** Program was halted. Allocation Calls: %d Free Calls: %d", alloc_calls, free_calls);
+        log_write("*** Program was halted. Allocation Calls: %d Free Calls: %d", stats.alloc_calls, stats.free_calls);
         exit(EXIT_SUCCESS);
     }
     
