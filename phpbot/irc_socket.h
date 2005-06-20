@@ -40,3 +40,5 @@ struct send_q {
 
 struct send_q *q_first;
 struct send_q *q_last;
+
+unsigned int eventloop_running; /* To prevent multiple event loops */
