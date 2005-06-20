@@ -14,9 +14,6 @@ http://www.gnu.org/licenses/gpl.txt
 
 #include "main.h"
 
-unsigned long alloc_calls;
-unsigned long free_calls;
-
 void _make_error(char *errmsg, char *file, const int line) {
     fprintf(stderr, "\n**********\n%s (%s:%d) %s\n**********\n", XION_ERROR_MSG, file, line, errmsg);
     log_write("%s (%s:%d) %s", XION_ERROR_MSG, file, line, errmsg);
@@ -129,7 +126,7 @@ void* mallocm(size_t size) {
         return NULL;
     }
     
-    alloc_calls++;
+    stats.alloc_calls++;
     
     return ptr;
 }
@@ -144,7 +141,7 @@ void* callocm(size_t size, size_t typelen) {
         return NULL;
     }
     
-    alloc_calls++;
+    stats.alloc_calls++;
     
     return ptr;
 }
@@ -158,9 +155,9 @@ void _freem(void **memblock) {
     free(*memblock);
     *memblock = NULL;
     
-    if(++free_calls > alloc_calls) {
-        alloc_calls = 0;
-        free_calls = 0;
+    if(++stats.free_calls > stats.alloc_calls) {
+        stats.alloc_calls = 0;
+        stats.free_calls = 0;
         make_warning("The number of free calls is greater than allocated calls (counters reset).");
     }
     
@@ -357,6 +354,61 @@ unsigned int matchstr(unsigned char *wildstr, unsigned char *regstr) {
         else {
             if(*w) w++;
             if(*r) r++;
+        }
+    }
+    
+    return 1;
+}
+
+long dur_times[] = {1, 60, 3600, 86400, 604800, 2419200, 29030400}; /* sec, min, hr, day, wk, mon, yr */
+unsigned int duration(struct dur_t *buf, time_t t) {
+    unsigned int i;
+    div_t result;
+    
+    if(buf == NULL)
+        return 0;
+    
+    if(t < 1)
+        return 0;
+    
+    i = 7;
+    while(i--) {
+        if((t - dur_times[i]) >= 0) {
+            result = div(t, dur_times[i]);
+            t -= result.quot*dur_times[i];
+        }
+        else {
+            result.quot = 0;
+        }
+        
+        switch(i) {
+            case 6:
+                buf->years = result.quot;
+                break;
+                    
+            case 5:
+                buf->months = result.quot;
+                break;
+                    
+            case 4:
+                buf->weeks = result.quot;
+                break;
+                    
+            case 3:
+                buf->days = result.quot;
+                break;
+                    
+            case 2:
+                buf->hours = result.quot;
+                break;
+                    
+            case 1:
+                buf->minutes = result.quot;
+                break;
+                    
+            case 0:
+                buf->seconds = result.quot;
+                break;
         }
     }
     
