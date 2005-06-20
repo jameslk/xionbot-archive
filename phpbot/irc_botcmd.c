@@ -381,9 +381,6 @@ static BOT_CMD(chan) {
 }
 
 static BOT_CMD(info) {
-    extern unsigned long alloc_calls;
-    extern unsigned long free_calls;
-    
     irc_notice_user(user->nick, 0, "Bot Information:");
     irc_notice_user(user->nick, 0, "- Version: %s", XION_VERSION);
     irc_notice_user(user->nick, 0, "- Nick: %s", bot.nick);
@@ -404,9 +401,10 @@ static BOT_CMD(info) {
         irc_notice_user(user->nick, 0, "- MSG Trigger: ");
     else
         irc_notice_user(user->nick, 0, "- MSG Trigger: %c", bot.ptrigger);
-    irc_notice_user(user->nick, 0, "- Events: %d", event_count);
-    irc_notice_user(user->nick, 0, "- Memory Allocations: %d", alloc_calls);
-    irc_notice_user(user->nick, 0, "- Memory Freed: %d", free_calls);
+    irc_notice_user(user->nick, 0, "- Uptime: %ld seconds", time(NULL)-stats.start_time);
+    irc_notice_user(user->nick, 0, "- Events: %d", stats.event_count);
+    irc_notice_user(user->nick, 0, "- Memory Allocations: %d", stats.alloc_calls);
+    irc_notice_user(user->nick, 0, "- Memory Freed: %d", stats.free_calls);
     
     return 1;
 }
@@ -501,6 +499,49 @@ static BOT_CMD(ban) {
     return retn_val;
 }
 
+static BOT_CMD(uptime) {
+    char *uptime;
+    struct dur_t dur;
+    
+    if(!duration(&dur, time(NULL) - stats.start_time))
+        return 0;
+    
+    uptime = (char*)callocm(64, sizeof(char));
+    if(uptime == NULL)
+        return 0;
+    
+    if(dur.years)
+        sprintf(uptime, "%d years", dur.years);
+    if(dur.months)
+        sprintf(uptime, "%s %d months", uptime, dur.months);
+    if(dur.weeks)
+        sprintf(uptime, "%s %d weeks", uptime, dur.weeks);
+    if(dur.days)
+        sprintf(uptime, "%s %d days", uptime, dur.days);
+    if(dur.hours)
+        sprintf(uptime, "%s %d hours", uptime, dur.hours);
+    if(dur.minutes)
+        sprintf(uptime, "%s %d minutes", uptime, dur.minutes);
+    if(dur.seconds)
+        sprintf(uptime, "%s %d seconds", uptime, dur.seconds);
+    
+    if(uptime[0] == ' ')
+        uptime++;
+    
+    switch(cmd_type) {
+        case BC_PRIVMSG:
+            irc_notice_user(user->nick, 0, "Uptime: %s", uptime);
+            break;
+        
+        case BC_CHANMSG:
+            irc_privmsg_chan(chan->name, 0, "Uptime: %s", uptime);
+            break;
+    }
+    
+    free(uptime);    
+    return 1;
+}
+
 /* Register all our bot commands in main. */
 unsigned int bot_cmd_init(void) {
     unsigned int s = 1;
@@ -519,6 +560,7 @@ unsigned int bot_cmd_init(void) {
     s &= register_bot_cmd("info", bot_cmd_info, 0, (BC_PRIVMSG|BC_CHANMSG), BC_NOT_UNBINDABLE);
     s &= register_bot_cmd("raw", bot_cmd_raw, 2, BC_PRIVMSG, BC_NOT_UNBINDABLE);
     s &= register_bot_cmd("ban", bot_cmd_ban, 1, (BC_PRIVMSG|BC_CHANMSG), BC_NOT_UNBINDABLE);
+    s &= register_bot_cmd("uptime", bot_cmd_uptime, 0, (BC_PRIVMSG|BC_CHANMSG), BC_NOT_UNBINDABLE);
     
     s &= register_bot_cmd("relay", bot_cmd_relay, 2, (BC_PRIVMSG|BC_CHANMSG), BC_NOT_UNBINDABLE);
     s &= register_bot_cmd("relays", bot_cmd_relays, 0, (BC_PRIVMSG|BC_CHANMSG), BC_NOT_UNBINDABLE);
