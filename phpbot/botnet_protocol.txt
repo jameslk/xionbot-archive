@@ -1,0 +1,53 @@
+XionBot Botnet Protocol
+Draft
+
+standard command:
+botid command <@subcmd @subcmd ...> <arg1 arg2 ...> <:string>
+
+standard command reply:
+botid command @rpl <arg1 arg2 ...> <:string>
+
+standard command error:
+botid command @err [number] <arg1 arg2 ...> <:string>
+
+protocol details:
+    - try to make commands as short as possible
+    - command subcommands should start with "@"
+    - command replies should have the subcommand "@rpl" followed by any subcommands issued
+        example: 1 command @rpl <@subcmd1 @subcmd2 ...> <arg1 arg2 ...> <:string>
+    - command errors should have the subcommand "@err" followed by any subcommands issued then the error number
+        example: 1 command @err <@subcmd1 @subcmd2 ...> [number] <arg1 arg2 ...> <:string>
+    - string data is optional and should be used for large data
+    - when referencing a bot, use ?[botid]
+    - when referencing a user, use ![user]
+    - a list should not have spaces and should be seperated by ","
+        example: item1,item2,item3
+    - unlike irc, all data should be seperated by a newline character (\n)
+        example: 1 bn reply info list :1@1.2.3.4(newline)1 bn reply users :jack@1
+
+example botnet info:
+    [botid] bn @info
+    > 4 bn @info
+
+    [botid] bn reply [last command] [bot list] :[botname]![botid]@[ip] ...
+    < 1 bn @rpl @info list :leetbot!1@1.2.3.4 spiffybot!2@5.6.7.8 weebot!3@9.10.11.12
+
+    [botid] bn reply [last command] [bot users] :[user]@[botid] ...
+    < 1 bn @rpl @info users :jack@1 steve@1 bob@2 joe@3
+
+example messages:
+    [botid] msg [from user] [!user(s) and/or ?botid(s)] :[message]
+    > 3 msg joe !bob,?1 :hello everyone!
+    < 1 msg steve !joe :hey joe!
+
+example ping pong:
+    > 4 ping
+    < 1 ping @rpl
+
+example errors:
+    [botid] err [number] <arg1> :[error message]
+    > 1 err 123 ?2 :spiffybot has quit (no ping reply).
+    
+    > 3 msg joe ?5 :hello everyone on non-existant bot!
+    [botid] msg err [number] <user> <arg1, arg2, ...> :[message]
+    < 1 msg @err 404 joe :No such bot.
