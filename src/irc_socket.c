@@ -318,7 +318,7 @@ THREADFUNC(irc_sockeventloop) {
                     bot.current_try = 0;
                     recieved_ping = 1;
                 }
-                else if(!i) {
+                else {
                     /* We've been disconnected */
                     bot.connected = 0;
                     if(bot.current_try <= bot.maxretry) {
@@ -350,10 +350,6 @@ THREADFUNC(irc_sockeventloop) {
                         getchar();
                         clean_exit(0);
                     }
-                }
-                else {
-                    /* recv() returned with -1 */
-                    make_warning("recv() returned with an error (-1).");
                 }
             }
         }
