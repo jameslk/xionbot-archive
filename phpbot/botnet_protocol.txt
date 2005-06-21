@@ -23,7 +23,7 @@ protocol details:
     - a list should not have spaces and should be seperated by ","
         example: item1,item2,item3
     - all data should be seperated by a carriage return and newline character pair (\r\n)
-        example: 1 bn reply info list :1@1.2.3.4(cr)(nl)1 bn reply users :jack@1
+        example: 1 bn @rpl @info list :1@1.2.3.4(cr)(nl)1 bn @rpl @info users :jack@1
 
 example botnet info:
     [botid] bn @info
