@@ -257,13 +257,16 @@ char* irc_get_netname(char *buf, char *raw) {
 }
 
 THREADFUNC(irc_fightfornick) {
-    while(1) {
-        if(mynickison) {
+    unsigned int finished = 0;
+    const unsigned int start_cid = bot.cid;
+    
+    while(!finished) {
+        if((mynickison) && (start_cid == bot.cid)) {
             irc_ison(bot.nick);
             waits(12);
         }
         else {
-            break;
+            finished++;
         }
     }
     
@@ -274,9 +277,13 @@ THREADFUNC(irc_fightfornick) {
 
 THREADFUNC(irc_pingserver) {
     char time_str[MAX_MSGLEN];
-    int i;
+    int i, finished = 0;
+    const unsigned int start_cid = bot.cid;
     
-    while(1) {
+    while(!finished) {
+        if(start_cid != bot.cid)
+            break;
+        
         if(recieved_ping) {
             recieved_ping = 0;
             waits(bot.ping_timeout);
@@ -285,6 +292,7 @@ THREADFUNC(irc_pingserver) {
             sprintf(time_str, "%ld", time(NULL));
             irc_ping(time_str);
             waits(bot.ping_timeout);
+            if(start_cid != bot.cid) break;
             if(!recieved_ping) {
                 irc_disconnect();
                 waits(3);
@@ -295,11 +303,11 @@ THREADFUNC(irc_pingserver) {
                         getchar();
                         clean_exit(1);
                 }
-                break;
+                finished++;
             }
         }
         else {
-            break;
+            finished++;
         }
     }
     
