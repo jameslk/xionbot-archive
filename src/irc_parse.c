@@ -80,11 +80,19 @@ unsigned int irc_parsenumeric(unsigned int numeric, char *raw) {
         case 376:
         case 422:
             r = irc_start(2);
+            if(!r)
+                make_warning("irc_start(2) failed.");
             break;
         
         case 433:
-            if(istrcmp(bot.current_nick, bot.nick)) break;
-            xstrcpy(bot.current_nick, bot.altnick, 32);
+            if(istrcmp(bot.current_nick, bot.altnick)) {
+                if(strlen(bot.altnick) >= MAX_NICKLEN-1) {
+                    make_error("No nicknames available.");
+                    clean_exit(1);
+                }
+                sprintf(bot.altnick, "%s_", bot.altnick);
+            }
+            xstrcpy(bot.current_nick, bot.altnick, MAX_NICKLEN);
             r = irc_nick(bot.altnick);
             if(!r)
                 make_warning("irc_nick (433) failed.");
@@ -95,6 +103,8 @@ unsigned int irc_parsenumeric(unsigned int numeric, char *raw) {
         case 451:
             /* Start over. (got "Register First" message) */
             r = irc_start(1);
+            if(!r)
+                make_warning("irc_start(1) failed.");
             break;
         
         default:
