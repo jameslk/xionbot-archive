@@ -42,6 +42,7 @@ struct xionbot {
     char servaddr[257];
     unsigned short servport;
     char servpass[MAX_PASSLEN];
+    unsigned int cid;
     /* // */
     char config[261];
     char fresh_log; /* Clear the log file on start? */
@@ -69,6 +70,7 @@ struct bot_stats {
     unsigned long alloc_calls;
     unsigned long free_calls;
     unsigned long event_count;
+    unsigned int dcc_count;
 } stats;
 
 #include "log.h"

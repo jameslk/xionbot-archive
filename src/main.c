@@ -23,6 +23,7 @@ http://www.gnu.org/licenses/gpl.txt
 #include "irc_mode.h"
 
 #include "irc_botcmd.h"
+#include "dcc.h"
 
 #include "mod-irc_relay.h"
 #include "mod-weburlcache.h"
@@ -234,8 +235,11 @@ unsigned int init(void) {
     init_handle(&me);
     init_handle(&bc_first);
     init_handle(&bc_last);
+    init_handle(&dcc_first);
+    init_handle(&dcc_last);
     
     eventloop_running = 0;
+    bot.cid = 0;
     bot.connected = 0;
     
     xstrcpy(bot.config, XION_CONFIG, 260);
