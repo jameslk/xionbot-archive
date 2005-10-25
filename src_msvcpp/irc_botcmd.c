@@ -17,6 +17,7 @@ http://www.gnu.org/licenses/gpl.txt
 #include "irc_user.h"
 #include "irc_commands.h"
 #include "irc_botcmd.h"
+#include "dcc.h"
 
 #include "mod-irc_relay.h"
 
@@ -243,6 +244,33 @@ static BOT_CMD(help) {
     }
     else {
         irc_notice_user(user->nick, 0, "Type %ccommands for a list of commands.", bot.ctrigger);
+    }
+    
+    return 1;
+}
+
+static BOT_CMD(dcc) {
+    unsigned short port;
+    char *notice;
+    struct dccNode *dcc;
+    
+    if(istrcmp(argv[0], "CHAT") && istrcmp(argv[1], "chat")) {
+        port = (short)atoi(argv[3]);
+        if(!port)
+            return 1;
+        
+        dcc = dcc_connect(user, argv[2], port);
+        
+        if(dcc == NULL)
+            return 0;
+        
+        notice = (char*)calloc(27+strlen(dcc->user->nick)+strlen(dcc->ip), sizeof(char));
+        if(notice == NULL)
+            return 0;
+        
+        sprintf(notice, "DCC CHAT started with %s (%s).", dcc->user->nick, dcc->ip);
+        make_notice(notice);
+        freem(notice);
     }
     
     return 1;
@@ -550,6 +578,7 @@ unsigned int bot_cmd_init(void) {
     
     s &= register_bot_cmd("version", bot_cmd_version, 0, (BC_PRIVMSG|BC_CHANMSG|BC_PRIVCTCP|BC_CHANCTCP), BC_NOT_UNBINDABLE);
     s &= register_bot_cmd("ping", bot_cmd_ping, 1, (BC_PRIVCTCP|BC_CHANCTCP), BC_NOT_UNBINDABLE);
+    s &= register_bot_cmd("dcc", bot_cmd_dcc, 4, BC_PRIVCTCP, (BC_NOT_UNBINDABLE|BC_NOT_BINDABLE));
     
     s &= register_bot_cmd("help", bot_cmd_help, 0, (BC_PRIVMSG|BC_CHANMSG), BC_NOT_UNBINDABLE);
     s &= register_bot_cmd("say", bot_cmd_say, 1, (BC_PRIVMSG|BC_CHANMSG), BC_NOT_UNBINDABLE);
