@@ -95,6 +95,14 @@ SOURCE=.\conf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\dcc.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\dcc.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\event.c
 # End Source File
 # Begin Source File
