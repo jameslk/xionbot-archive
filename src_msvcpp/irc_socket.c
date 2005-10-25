@@ -216,7 +216,7 @@ static int irc_recv(char *buf) {
     return 1;
 }
 
-unsigned int irc_connect(unsigned char *servaddr, int servport) {
+unsigned int irc_connect(unsigned char *servaddr, unsigned int servport) {
     struct sockaddr_in addr;
     struct hostent *hosttoip;
     #ifdef PLATFORM_WINDOWS
@@ -256,14 +256,16 @@ unsigned int irc_connect(unsigned char *servaddr, int servport) {
     
     addr.sin_family = AF_INET;
     addr.sin_port = htons(bot.servport);
-    addr.sin_addr = *((struct in_addr*) hosttoip->h_addr);
+    addr.sin_addr = *((struct in_addr*)hosttoip->h_addr);
     
-    if(connect(bot.sock, (struct sockaddr*) &addr, sizeof(struct sockaddr)) == -1) {
+    if(connect(bot.sock, (struct sockaddr*)&addr, sizeof(struct sockaddr)) == -1) {
         #ifdef PLATFORM_WINDOWS
         WSACleanup();
         #endif
         return CERROR_CONFAIL;
     }
+    
+    bot.cid++;
     
     if(mkthread(irc_sockeventloop, NULL) == 0) {
         getchar();
@@ -288,8 +290,8 @@ void irc_disconnect(void) {
 
 THREADFUNC(irc_sockeventloop) {
     char *data;
-    int i = 0;
-    char finished = 0;
+    int i = 0, finished = 0;
+    const unsigned int start_cid = bot.cid;
     fd_set const_read, event_read;
     
     FD_ZERO(&const_read);
@@ -307,6 +309,9 @@ THREADFUNC(irc_sockeventloop) {
     while(!finished) {
         event_read = const_read;
         if(select(bot.sock+1, &event_read, NULL, NULL, NULL)) {
+            if(start_cid != bot.cid)
+                break;
+            
             if(FD_ISSET(bot.sock, &event_read)) {
                 /* We've recieved some data, let's do something with it. */
                 i = irc_recv(data);
@@ -341,7 +346,7 @@ THREADFUNC(irc_sockeventloop) {
                             clean_exit(1);
                         }
                         printf("Connected.\n");
-                        finished = 1;
+                        finished++;
                     }
                     else {
                         freem(data);
