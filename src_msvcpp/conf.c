@@ -25,8 +25,9 @@ char* config_line(char *buf, unsigned long line) {
     fptr = fopen(bot.config, "r+");
     #endif
     if(!fptr) {
-        make_error("Couldn't open config file.");
-        return NULL;
+        make_error("Failed to open the configuration file.");
+        getchar();
+        clean_exit(1);
     }
     
     fseek(fptr, 0, SEEK_END);
