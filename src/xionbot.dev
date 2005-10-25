@@ -1,7 +1,7 @@
 [Project]
 FileName=xionbot.dev
 Name=xionbot
-UnitCount=33
+UnitCount=35
 Type=1
 Ver=1
 ObjFiles=
@@ -348,9 +348,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit34]
-FileName=event.c
+FileName=dcc.c
 CompileCpp=0
-Folder=xionbot
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -381,6 +381,16 @@ BuildCmd=
 FileName=irc_channel.c
 CompileCpp=0
 Folder=xionbot
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit35]
+FileName=dcc.h
+CompileCpp=0
+Folder=
 Compile=1
 Link=1
 Priority=1000
