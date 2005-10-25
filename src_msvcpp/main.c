@@ -236,6 +236,7 @@ unsigned int init(void) {
     init_handle(&bc_last);
     
     eventloop_running = 0;
+    bot.cid = 0;
     bot.connected = 0;
     
     xstrcpy(bot.config, XION_CONFIG, 260);
