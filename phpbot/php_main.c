@@ -56,6 +56,27 @@ static void sapi_error(int type, const char *error_msg, ...) {
 	return ;
 }
 
+#define GLOBAL_SVAR(VAR, STR) \
+    MAKE_STD_ZVAL(VAR); \
+    VAR->type = IS_STRING; \
+    VAR->value.str.len = strlen(STR); \
+    VAR->value.str.val = STR; \
+    zend_hash_update( \
+        &EG(symbol_table), \
+        #VAR, \
+        strlen(#VAR)+1, \
+        &VAR, \
+        sizeof(zval*), \
+        NULL \
+    );
+static void init_global_vars(void) {
+    zval *me;
+    
+    GLOBAL_SVAR(me, bot.current_nick);
+    
+    return ;
+}
+
 unsigned int phpm_init(void) {
     char **llines;
     char *linetok;
@@ -66,6 +87,8 @@ unsigned int phpm_init(void) {
     php_embed_module.sapi_error = sapi_error;
     
 	zend_startup_module(&phpmod_module_entry);
+	
+	init_global_vars();
 	
 	if(!phpm_eventinit())
 	   return 0;

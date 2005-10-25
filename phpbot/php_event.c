@@ -240,7 +240,7 @@ static unsigned int ev_parse_privmsg(datalist data) {
     }
             
     strcpy(ctcp_cmd, message+1);
-    ctcp_cmd = xstrtok(ctcp_cmd, " ", &r, 1);
+    ctcp_cmd = xstrtok(ctcp_cmd, " ", NULL);
     msg_len = strlen(ctcp_cmd)+2;
     
     if(message[msg_len])
@@ -290,7 +290,7 @@ static unsigned int ev_parse_notice(datalist data) {
     }
             
     strcpy(ctcp_reply, notice+1);
-    ctcp_reply = xstrtok(ctcp_reply, " ", &r, 1);
+    ctcp_reply = xstrtok(ctcp_reply, " ", NULL);
     len = strlen(ctcp_reply)+2;
     
     if(notice[len])

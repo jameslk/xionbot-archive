@@ -1,0 +1,10 @@
+Todo List For XionBot
+- Fix admin system: get rid of string system and implement structures.
+- Add DCC system
+- Add a variable for event types to allow for an unlimited amount of different events
+- Add multi-connection support but limit it to one server address per connection to prevent floodnets and to make coding easier
+- Fix the strip codes function to strip color codes (with numbers)
+- Allow for modules to be turned off in the config or at runtime (as opposed to be built into Xionbot when compiled)
+- Add the ability to ignore messages/notices/ctcps/invites/etc from someone
+- Fix bugs with phpbot
+- Unix/Linux makefiles, etc
