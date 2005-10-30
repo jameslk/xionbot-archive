@@ -146,11 +146,15 @@ unsigned int user_del_userchan(struct chanlist *hChanList) {
 
 unsigned int user_fillmask(struct userNode *user, char *hostmask) {
     unsigned int i, x, len, len2, len3;
+    
     if((user == NULL) || (blankstr(hostmask)))
         return 0;
     
     len = strlen(hostmask);
     len2 = strlen(user->nick);
+    if(len2 >= len)
+        return 0;
+    
     for(i = len2+1, x = 0;x < (len2+MAX_USERLEN);i++, x++) {
         if(hostmask[i] == '@')
             break;

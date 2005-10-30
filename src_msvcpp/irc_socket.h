@@ -8,6 +8,7 @@ http://www.gnu.org/licenses/gpl.txt
 
 unsigned int irc_raw(char *raw);
 unsigned int irc_queue(char *raw, unsigned int release);
+void queue_free_data(void);
 unsigned int irc_send(char *raw, unsigned int override);
 unsigned int flckmsg;
 
@@ -35,7 +36,7 @@ struct send_q {
     struct send_q *next;
     struct send_q *prev;
     
-    char raw[511];
+    char raw[511]; /* 511 to save room for \r\n */
 };
 
 struct send_q *q_first;

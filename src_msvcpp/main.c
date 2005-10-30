@@ -23,6 +23,7 @@ http://www.gnu.org/licenses/gpl.txt
 #include "irc_mode.h"
 
 #include "irc_botcmd.h"
+#include "dcc.h"
 
 #include "mod-irc_relay.h"
 #include "mod-weburlcache.h"
@@ -173,7 +174,6 @@ unsigned int _init_handle(void **ptr) {
 
 void free_xion_memory(void) {
     unsigned int i = 0;
-    struct send_q *qtmp, *qtmp2;
     struct handle_list *temp_hlist, *temp_hlist2;
     
     if(bot.admin_array != NULL) {
@@ -186,14 +186,7 @@ void free_xion_memory(void) {
         freem(bot.admin_array_current);
     }
     
-    while(q_first != NULL) {
-        for(qtmp = q_first;qtmp->next != NULL;qtmp = qtmp->next);
-        qtmp2 = qtmp->prev;
-        freem(qtmp);
-        if(qtmp2 == NULL) break;
-        qtmp2->next = NULL;
-    }
-    
+    queue_free_data();
     user_free_data();
     chan_free_data();
     botcmd_free_data();
@@ -234,6 +227,8 @@ unsigned int init(void) {
     init_handle(&me);
     init_handle(&bc_first);
     init_handle(&bc_last);
+    init_handle(&dcc_first);
+    init_handle(&dcc_last);
     
     eventloop_running = 0;
     bot.cid = 0;
