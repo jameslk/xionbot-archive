@@ -77,13 +77,16 @@ unsigned int irc_queue(char *raw, unsigned int release) {
             freem(queue);
         }
         
+        if(queue == NULL) {
+            q_first = NULL;
+        }
+        else {
+            q_first = queue;
+            q_first->prev = NULL;
+        }
+        
         q_floodcheck_msg = 1;
         irc_ctcp_user(bot.current_nick, MSG_URGENT, "floodcheck");
-        
-        if(queue == NULL)
-            q_first = NULL;
-        else
-            q_first = queue;
     }
     else {
         for(queue = q_first;queue != NULL;queue = queue->next)
@@ -100,15 +103,7 @@ unsigned int irc_queue(char *raw, unsigned int release) {
             queue->prev = NULL;
             xstrcpy(queue->raw, raw, 511);
             
-            if(q_first == NULL) {
-                queue->prev = NULL;
-                q_first = queue;
-            }
-            else {
-                queue->prev = q_last;
-                q_last->next = queue;
-            }
-            q_last = queue;
+            LL_ADDNODE(queue, q_first, q_last)
             
             if(!q_floodcheck_msg) {
                 q_floodcheck_msg = 1;
@@ -141,6 +136,21 @@ unsigned int irc_queue(char *raw, unsigned int release) {
     }
     
     return 1;
+}
+
+void queue_free_data(void) {
+    struct send_q *temp_q, *temp_q2;
+    
+    temp_q = q_last;
+    while(temp_q != NULL) {
+        temp_q2 = temp_q->prev;
+        freem(temp_q);
+        if(temp_q2 == NULL) break;
+        temp_q2->next = NULL;
+        temp_q = temp_q2;
+    }
+    
+    return ;
 }
 
 unsigned int irc_send(char *raw, unsigned int override) {
