@@ -493,7 +493,8 @@ PARSE_FUNC(join) {
         hChanList = user_add_userchan(user, chan);
         hChanList->chanuser_info = hUserList;
         
-        user_fillmask(user, irc_get_mask(temp, raw));
+        if(!user_fillmask(user, irc_get_mask(temp, raw)))
+            make_warning("user_fillmask failed.");
     }
     
     user->relate = 1;
@@ -670,7 +671,8 @@ PARSE_FUNC(mode) {
         if((user = user_get_handle(setter)) != NULL) {
             clearstr(temp, strlen(raw)+1);
             irc_get_mask(temp, raw);
-            user_fillmask(user, temp);
+            if(!user_fillmask(user, temp))
+                make_warning("user_fillmask failed.");
         }
     }
     
@@ -737,7 +739,8 @@ PARSE_FUNC(topic) {
     }
         
     clearstr(temp, strlen(raw)+1);
-    user_fillmask(user, irc_get_mask(temp, raw));
+    if(!user_fillmask(user, irc_get_mask(temp, raw)))
+        make_warning("user_fillmask failed.");
     
     event_call(EVENT_IRCTOPIC, 3, raw, user->nick, chan->name, chan->topic);
     
@@ -781,7 +784,8 @@ PARSE_FUNC(nick) {
     
     xstrcpy(user->nick, (strstr(raw, " :")+2), MAX_NICKLEN);
     clearstr(temp, strlen(raw)+1);
-    user_fillmask(user, irc_get_mask(temp, raw));
+    if(!user_fillmask(user, irc_get_mask(temp, raw)))
+        make_warning("user_fillmask failed.");
     
     event_call(EVENT_IRCNICK, 3, raw, user->nick, oldnick);
     
@@ -867,7 +871,9 @@ PARSE_FUNC(302) {
     sprintf(temp, "%s!%s", nick, hostmask);
     hostmask = temp;
     
-    user_fillmask(user, hostmask);
+    if(!user_fillmask(user, hostmask))
+        make_warning("user_fillmask failed.");
+    
     if(oper)
         user->user_mode |= MODE_OPER;
         
@@ -1048,14 +1054,18 @@ PARSE_FUNC(367) {
     xstrtok(temp, " ", &pos);
     xstrtok(temp, " ", &pos);
     chan = chan_get_handle(xstrtok(temp, " ", &pos));
-    if(chan == NULL)
+    if(chan == NULL) {
+        freem(temp);
         return 0;
+    }
     
     temp2 = xstrtok(temp, " ", &pos);
     mode_delban(chan, temp2);
     ban = mode_addban(chan, temp2);
-    if(ban == NULL)
+    if(ban == NULL) {
+        freem(temp);
         return 0;
+    }
     
     xstrcpy(ban->setby, xstrtok(temp, " ", &pos), MAX_LEN);
     ban->date = atoi(xstrtok(temp, " ", &pos));
