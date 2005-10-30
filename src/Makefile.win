@@ -1,5 +1,5 @@
 # Project: xionbot
-# Makefile created by Dev-C++ 4.9.9.1
+# Makefile created by Dev-C++ 4.9.9.2
 
 CPP  = g++.exe -D__DEBUG__
 CC   = gcc.exe -D__DEBUG__
@@ -13,6 +13,7 @@ CXXINCS =  -I"C:/Dev-Cpp/include/c++"  -I"C:/Dev-Cpp/include/c++/mingw32"  -I"C:
 BIN  = xionbot.exe
 CXXFLAGS = $(CXXINCS)   -ansi -g3
 CFLAGS = $(INCS) -ansi   -ansi -g3
+RM = rm -f
 
 .PHONY: all all-before all-after clean clean-custom
 
@@ -20,7 +21,7 @@ all: all-before xionbot.exe all-after
 
 
 clean: clean-custom
-	rm -f $(OBJ) $(BIN)
+	${RM} $(OBJ) $(BIN)
 
 $(BIN): $(OBJ)
 	$(CC) $(LINKOBJ) -o "xionbot.exe" $(LIBS)
